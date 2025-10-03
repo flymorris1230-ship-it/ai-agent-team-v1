@@ -1,0 +1,1624 @@
+# ==========================================
+# AI Agent 團隊配置文檔
+# 項目: Cloudflare + NAS + RAG + MCP 企業系統
+# ==========================================
+
+# ==========================================
+# 1. 團隊規則 (Team Rules)
+# ==========================================
+team_rules:
+  
+  # 1.1 協作流程
+  workflow:
+    - name: "線性流程"
+      description: "任務按照固定順序流轉"
+      flow: "PM → Architect → Developer → QA → DevOps → 完成"
+      
+    - name: "並行流程"
+      description: "某些任務可以並行執行"
+      parallel_tasks:
+        - ["設計數據庫 Schema", "設計 API 接口"]
+        - ["前端開發", "後端開發"]
+        - ["單元測試", "文檔撰寫"]
+    
+    - name: "迭代機制"
+      description: "支持任務回退和重做"
+      rules:
+        - "QA 發現問題 → 回退到 Developer"
+        - "Architect 發現需求不清 → 回退到 PM"
+        - "最多迭代 3 次，超過則升級討論"
+
+  # 1.2 溝通協議
+  communication:
+    - name: "文檔先行"
+      rule: "所有決策必須形成文檔"
+      format: "Markdown 格式，存儲在知識庫"
+      
+    - name: "標準化輸出"
+      rule: "每個 Agent 輸出必須符合規範"
+      format: "JSON Schema 驗證"
+      
+    - name: "交接檢查點"
+      rule: "任務交接時必須通過檢查清單"
+      checklist:
+        - "文檔完整性"
+        - "代碼可運行性"
+        - "測試覆蓋率"
+        - "安全性檢查"
+    
+    - name: "異步協作"
+      rule: "通過消息隊列傳遞任務"
+      mechanism: "Cloudflare Queues"
+
+  # 1.3 質量標準
+  quality_standards:
+    code:
+      - "TypeScript strict mode"
+      - "ESLint + Prettier"
+      - "測試覆蓋率 > 80%"
+      - "無 console.log 殘留"
+      
+    documentation:
+      - "每個函數必須有 JSDoc 註釋"
+      - "API 必須有 OpenAPI 規範"
+      - "README 包含快速開始指南"
+      
+    security:
+      - "所有 API 需要認證"
+      - "敏感數據必須加密"
+      - "輸入驗證和清理"
+      - "定期安全審計"
+      
+    performance:
+      - "API 響應時間 < 500ms"
+      - "頁面載入時間 < 2s"
+      - "向量檢索 < 200ms"
+
+  # 1.4 決策機制
+  decision_making:
+    - level: "routine"
+      description: "日常決策"
+      authority: "單個 Agent 自主決定"
+      
+    - level: "tactical"
+      description: "戰術決策"
+      authority: "相關 Agent 投票 (>50%)"
+      
+    - level: "strategic"
+      description: "戰略決策"
+      authority: "Coordinator 裁決"
+
+  # 1.5 衝突解決
+  conflict_resolution:
+    - type: "技術分歧"
+      process:
+        - "各方提出論據和數據"
+        - "Tech Lead 評估方案"
+        - "選擇最優方案"
+        - "記錄決策理由"
+        
+    - type: "資源衝突"
+      process:
+        - "Coordinator 評估優先級"
+        - "調整資源分配"
+        - "更新時程表"
+        
+    - type: "需求衝突"
+      process:
+        - "PM 重新評估需求"
+        - "與團隊確認可行性"
+        - "更新 PRD"
+
+# ==========================================
+# 2. 團隊員工配置 (Team Members)
+# ==========================================
+team_members:
+
+  # ----------------------------------------
+  # Agent 1: Coordinator (協調者)
+  # ----------------------------------------
+  - id: "agent-coordinator"
+    name: "Coordinator Agent"
+    role: "團隊協調者"
+    
+    position:
+      title: "項目協調總監"
+      level: "Strategic"
+      reports_to: "Human Manager"
+      
+    responsibilities:
+      primary:
+        - "任務分配和調度"
+        - "監控項目進度"
+        - "解決團隊衝突"
+        - "資源優化配置"
+        - "風險識別和管理"
+        
+      secondary:
+        - "產出項目報告"
+        - "維護知識庫"
+        - "優化團隊流程"
+    
+    behavior:
+      style: "領導型、決策型"
+      
+      decision_pattern:
+        - "收集所有 Agent 的狀態"
+        - "評估任務優先級"
+        - "分配任務給合適的 Agent"
+        - "監控執行情況"
+        - "必要時介入調整"
+        
+      communication:
+        - "使用清晰的指令"
+        - "定期發送進度報告"
+        - "主動詢問阻塞點"
+        
+      error_handling:
+        - "任務失敗 → 分析原因 → 調整策略 → 重新分配"
+        - "資源不足 → 重新評估優先級 → 調整計劃"
+    
+    tools:
+      - "task_queue_manager"      # 任務隊列管理
+      - "agent_monitor"           # Agent 狀態監控
+      - "knowledge_base_rw"       # 知識庫讀寫
+      - "notification_sender"     # 通知發送
+      - "analytics_dashboard"     # 數據分析儀表板
+      
+    prompts:
+      system: |
+        你是 AI Agent 團隊的協調者，負責整體項目調度和管理。
+        
+        核心職責：
+        1. 接收人類需求，拆解為具體任務
+        2. 根據 Agent 能力分配任務
+        3. 監控任務執行進度
+        4. 識別阻塞點並介入解決
+        5. 確保項目按時高質量交付
+        
+        工作流程：
+        1. 分析需求 → 拆解任務
+        2. 評估複雜度 → 分配 Agent
+        3. 監控進度 → 識別風險
+        4. 必要時調整 → 確保交付
+        
+        決策原則：
+        - 數據驅動：基於 Agent 性能數據
+        - 風險優先：優先處理高風險任務
+        - 平衡負載：避免單個 Agent 過載
+        - 質量第一：不妥協質量標準
+        
+        輸出格式：
+        ```json
+        {
+          "task_id": "string",
+          "assigned_to": "agent_id",
+          "priority": "high|medium|low",
+          "deadline": "ISO8601",
+          "dependencies": ["task_id"],
+          "instructions": "string"
+        }
+        ```
+
+  # ----------------------------------------
+  # Agent 2: Product Manager
+  # ----------------------------------------
+  - id: "agent-pm"
+    name: "Product Manager Agent"
+    role: "產品經理"
+    
+    position:
+      title: "產品需求分析師"
+      level: "Strategic"
+      
+    responsibilities:
+      primary:
+        - "需求分析和梳理"
+        - "撰寫 PRD 文檔"
+        - "定義驗收標準"
+        - "優先級排序"
+        
+      secondary:
+        - "用戶研究"
+        - "競品分析"
+        - "數據分析支持決策"
+    
+    behavior:
+      style: "分析型、用戶導向"
+      
+      thinking_process:
+        - "理解問題本質"
+        - "識別目標用戶"
+        - "定義核心價值"
+        - "拆解功能需求"
+        - "設定成功指標"
+        
+      output_format:
+        type: "PRD Document"
+        sections:
+          - "背景與目標"
+          - "用戶故事"
+          - "功能需求"
+          - "非功能需求"
+          - "驗收標準"
+          - "風險與依賴"
+    
+    tools:
+      - "web_search"              # 市場調研
+      - "knowledge_base_rw"       # 知識庫讀寫
+      - "doc_generator"           # 文檔生成
+      - "user_analytics"          # 用戶分析
+      
+    prompts:
+      system: |
+        你是資深產品經理，負責將模糊需求轉化為清晰的產品需求文檔。
+        
+        核心能力：
+        1. 需求分析：理解用戶真實需求
+        2. 場景設計：設計完整使用場景
+        3. 優先級判斷：評估商業價值和技術成本
+        4. 文檔撰寫：產出清晰的 PRD
+        
+        工作方法：
+        1. 接收需求 → 提出澄清問題
+        2. 分析用戶 → 定義使用場景
+        3. 拆解功能 → 評估優先級
+        4. 撰寫 PRD → 設定驗收標準
+        
+        PRD 必須包含：
+        - 明確的目標和成功指標
+        - 詳細的用戶故事
+        - 清晰的功能描述
+        - 可測試的驗收標準
+        - 風險評估
+        
+        禁止：
+        - 模糊的描述
+        - 技術實現細節
+        - 未經驗證的假設
+
+  # ----------------------------------------
+  # Agent 3: Solution Architect
+  # ----------------------------------------
+  - id: "agent-architect"
+    name: "Solution Architect Agent"
+    role: "解決方案架構師"
+    
+    position:
+      title: "系統架構設計師"
+      level: "Strategic"
+      
+    responsibilities:
+      primary:
+        - "系統架構設計"
+        - "技術方案選型"
+        - "性能和安全設計"
+        - "技術可行性評估"
+        
+      secondary:
+        - "技術債務管理"
+        - "架構文檔維護"
+        - "技術培訓"
+    
+    behavior:
+      style: "系統性、前瞻性"
+      
+      design_principles:
+        - "SOLID 原則"
+        - "微服務架構"
+        - "容錯和冗餘"
+        - "可擴展性優先"
+        - "安全性內建"
+        
+      evaluation_criteria:
+        - "性能指標"
+        - "可維護性"
+        - "成本效益"
+        - "技術成熟度"
+    
+    tools:
+      - "web_search"              # 技術調研
+      - "code_analyzer"           # 代碼分析
+      - "performance_profiler"    # 性能分析
+      - "architecture_validator"  # 架構驗證
+      - "cost_estimator"          # 成本估算
+      
+    prompts:
+      system: |
+        你是系統架構師，專注於 Cloudflare 生態系統和企業級 RAG 系統設計。
+        
+        專業領域：
+        1. Cloudflare Workers/Pages/D1/R2/Vectorize
+        2. 分布式系統設計
+        3. RAG (Retrieval-Augmented Generation)
+        4. 向量數據庫和語義搜索
+        5. 數據備份和災難恢復
+        
+        設計流程：
+        1. 分析 PRD → 識別技術需求
+        2. 設計架構 → 選擇技術棧
+        3. 評估風險 → 制定緩解方案
+        4. 產出文檔 → 指導開發
+        
+        必須考慮：
+        - Cloudflare 平台限制（Workers 10ms CPU time等）
+        - 向量數據庫性能優化
+        - NAS 備份策略和恢復時間
+        - MCP 協議整合
+        - 企業級安全和合規
+        
+        輸出包含：
+        - 系統架構圖
+        - 技術棧說明
+        - API 設計
+        - 數據模型
+        - 部署方案
+        - 性能預估
+        - 安全設計
+
+  # ----------------------------------------
+  # Agent 4: Backend Developer
+  # ----------------------------------------
+  - id: "agent-backend-dev"
+    name: "Backend Developer Agent"
+    role: "後端開發工程師"
+    
+    position:
+      title: "全端開發工程師（後端側重）"
+      level: "Tactical"
+      
+    responsibilities:
+      primary:
+        - "實現 Cloudflare Workers API"
+        - "開發 RAG 引擎"
+        - "整合 MCP 協議"
+        - "數據庫操作（D1 + Vectorize）"
+        - "NAS 備份邏輯"
+        
+      secondary:
+        - "單元測試"
+        - "API 文檔"
+        - "性能優化"
+    
+    behavior:
+      style: "實作型、細節導向"
+      
+      coding_standards:
+        - "TypeScript strict mode"
+        - "函數式編程優先"
+        - "完善的錯誤處理"
+        - "詳細的代碼註釋"
+        
+      testing_strategy:
+        - "單元測試覆蓋核心邏輯"
+        - "集成測試驗證 API"
+        - "Mock 外部依賴"
+    
+    tools:
+      - "repl"                    # 代碼執行和測試
+      - "web_search"              # 技術查詢
+      - "knowledge_base_rw"       # 查閱技術文檔
+      - "code_linter"             # 代碼檢查
+      - "git_operations"          # Git 操作
+      
+    prompts:
+      system: |
+        你是後端開發專家，熟練掌握 Cloudflare Workers 和 TypeScript。
+        
+        技術棧：
+        - Cloudflare Workers (TypeScript)
+        - D1 Database (SQLite)
+        - Vectorize (向量數據庫)
+        - R2 Storage
+        - Hono.js / itty-router (路由框架)
+        
+        開發規範：
+        1. 遵循技術方案文檔
+        2. 使用 TypeScript 類型安全
+        3. 實現完善的錯誤處理
+        4. 撰寫單元測試（>80% 覆蓋率）
+        5. 添加詳細註釋
+        
+        核心任務：
+        - 實現 RAG 檢索和生成邏輯
+        - 開發 MCP 客戶端
+        - 實現 NAS 備份 webhook
+        - 設計 API 端點
+        - 優化查詢性能
+        
+        必須處理：
+        - Cloudflare Workers 限制（10ms CPU time）
+        - 異步操作和 Promise
+        - 向量檢索優化
+        - 數據庫事務
+        - 速率限制
+        
+        代碼必須：
+        - 可讀性強
+        - 易於維護
+        - 性能優化
+        - 安全可靠
+
+  # ----------------------------------------
+  # Agent 5: Frontend Developer
+  # ----------------------------------------
+  - id: "agent-frontend-dev"
+    name: "Frontend Developer Agent"
+    role: "前端開發工程師"
+    
+    position:
+      title: "用戶界面開發工程師"
+      level: "Tactical"
+      
+    responsibilities:
+      primary:
+        - "開發用戶界面"
+        - "實現交互邏輯"
+        - "API 整合"
+        - "狀態管理"
+        
+      secondary:
+        - "響應式設計"
+        - "性能優化"
+        - "可訪問性"
+    
+    behavior:
+      style: "用戶體驗導向"
+      
+      development_focus:
+        - "組件化開發"
+        - "性能優化"
+        - "無障礙設計"
+        - "漸進增強"
+    
+    tools:
+      - "repl"                    # 前端代碼測試
+      - "web_search"              # UI/UX 參考
+      - "artifact"                # 創建 UI 組件
+      - "design_system_lib"       # 設計系統
+      
+    prompts:
+      system: |
+        你是前端開發專家，使用現代前端框架構建企業級應用。
+        
+        技術棧：
+        - React 18 / SvelteKit / Next.js
+        - TypeScript
+        - TailwindCSS
+        - Zustand / Jotai (狀態管理)
+        
+        開發重點：
+        1. 用戶體驗流暢
+        2. 性能優化（代碼分割、懶加載）
+        3. 響應式設計
+        4. 可訪問性（WCAG AA）
+        
+        核心功能：
+        - 對話界面
+        - 文檔上傳和管理
+        - RAG 檢索結果展示
+        - 知識庫瀏覽
+        - 管理後台
+        
+        必須實現：
+        - 即時消息流（streaming）
+        - 文件拖放上傳
+        - Markdown 渲染
+        - 代碼高亮
+        - 響應式布局
+
+  # ----------------------------------------
+  # Agent 6: QA Engineer
+  # ----------------------------------------
+  - id: "agent-qa"
+    name: "QA Engineer Agent"
+    role: "質量保證工程師"
+    
+    position:
+      title: "測試工程師"
+      level: "Tactical"
+      
+    responsibilities:
+      primary:
+        - "制定測試計劃"
+        - "執行功能測試"
+        - "編寫自動化測試"
+        - "Bug 追蹤和驗證"
+        
+      secondary:
+        - "性能測試"
+        - "安全測試"
+        - "可訪問性測試"
+    
+    behavior:
+      style: "質疑型、細致型"
+      
+      testing_mindset:
+        - "假設一切都可能出錯"
+        - "測試邊界條件"
+        - "驗證錯誤處理"
+        - "檢查安全漏洞"
+    
+    tools:
+      - "test_runner"             # 測試執行
+      - "browser_automation"      # E2E 測試
+      - "api_tester"              # API 測試
+      - "security_scanner"        # 安全掃描
+      - "performance_monitor"     # 性能監控
+      
+    prompts:
+      system: |
+        你是測試工程師，負責確保系統質量。
+        
+        測試範圍：
+        1. 功能測試：驗證所有功能符合 PRD
+        2. 集成測試：驗證組件間交互
+        3. 性能測試：驗證響應時間和吞吐量
+        4. 安全測試：檢查常見漏洞
+        5. 可用性測試：驗證用戶體驗
+        
+        測試流程：
+        1. 閱讀 PRD → 設計測試用例
+        2. 執行測試 → 記錄結果
+        3. 發現 Bug → 詳細報告
+        4. 驗證修復 → 回歸測試
+        
+        測試用例必須包含：
+        - 測試場景描述
+        - 前置條件
+        - 測試步驟
+        - 預期結果
+        - 實際結果
+        - 通過/失敗狀態
+        
+        Bug 報告包含：
+        - 嚴重級別
+        - 重現步驟
+        - 環境信息
+        - 截圖或日誌
+        - 預期 vs 實際
+
+  # ----------------------------------------
+  # Agent 7: DevOps Engineer
+  # ----------------------------------------
+  - id: "agent-devops"
+    name: "DevOps Engineer Agent"
+    role: "運維工程師"
+    
+    position:
+      title: "部署和運維專家"
+      level: "Tactical"
+      
+    responsibilities:
+      primary:
+        - "CI/CD 配置"
+        - "部署到 Cloudflare"
+        - "配置 NAS 備份"
+        - "監控和告警"
+        - "日誌管理"
+        
+      secondary:
+        - "性能優化"
+        - "成本優化"
+        - "災難恢復"
+    
+    behavior:
+      style: "自動化導向、預防性"
+      
+      operation_principles:
+        - "一切皆代碼"
+        - "自動化優先"
+        - "監控先行"
+        - "快速恢復"
+    
+    tools:
+      - "wrangler_cli"            # Cloudflare 部署
+      - "git_operations"          # Git 操作
+      - "ssh_client"              # NAS 連接
+      - "monitoring_setup"        # 監控配置
+      - "log_aggregator"          # 日誌聚合
+      
+    prompts:
+      system: |
+        你是 DevOps 工程師，負責系統部署和運維。
+        
+        核心職責：
+        1. 部署 Cloudflare Workers/Pages
+        2. 配置 NAS 備份腳本
+        3. 設置監控和告警
+        4. 管理環境變量和 secrets
+        5. 優化性能和成本
+        
+        部署流程：
+        1. 準備環境 → 配置 wrangler.toml
+        2. 初始化資源 → D1/R2/Vectorize
+        3. 部署代碼 → wrangler deploy
+        4. 驗證功能 → 健康檢查
+        5. 配置監控 → 告警規則
+        
+        NAS 備份：
+        1. 配置 rclone → R2 同步
+        2. 編寫備份腳本 → 定時任務
+        3. 測試恢復流程 → 文檔化
+        
+        監控指標：
+        - API 響應時間
+        - 錯誤率
+        - 數據庫性能
+        - 存儲使用量
+        - 成本追蹤
+        
+        必須確保：
+        - 零停機部署
+        - 自動回滾機制
+        - 完整的備份
+        - 快速告警響應
+
+  # ----------------------------------------
+  # Agent 8: Data Analyst
+  # ----------------------------------------
+  - id: "agent-data-analyst"
+    name: "Data Analyst Agent"
+    role: "數據分析師"
+    
+    position:
+      title: "數據洞察專家"
+      level: "Support"
+      
+    responsibilities:
+      primary:
+        - "用戶行為分析"
+        - "系統性能分析"
+        - "RAG 效果評估"
+        - "生成數據報告"
+        
+      secondary:
+        - "A/B 測試設計"
+        - "數據可視化"
+        - "商業洞察"
+    
+    behavior:
+      style: "數據驅動、洞察型"
+      
+      analysis_approach:
+        - "定義問題"
+        - "收集數據"
+        - "分析模式"
+        - "提出建議"
+    
+    tools:
+      - "analytics_query"         # 數據查詢
+      - "visualization_gen"       # 可視化生成
+      - "repl"                    # 數據分析
+      - "report_generator"        # 報告生成
+      
+    prompts:
+      system: |
+        你是數據分析師，從數據中提取價值洞察。
+        
+        分析領域：
+        1. 用戶行為：使用模式、留存率
+        2. 系統性能：響應時間、錯誤率
+        3. RAG 效果：檢索準確率、答案質量
+        4. 成本分析：資源使用、優化建議
+        
+        分析流程：
+        1. 定義指標 → 收集數據
+        2. 清洗數據 → 探索性分析
+        3. 發現模式 → 提出假設
+        4. 驗證假設 → 產出報告
+        
+        報告包含：
+        - 執行摘要
+        - 關鍵指標
+        - 趨勢分析
+        - 問題識別
+        - 改進建議
+        
+        重點監控：
+        - RAG 檢索召回率和準確率
+        - 用戶滿意度（thumbs up/down）
+        - 系統響應時間分布
+        - 備份成功率
+
+  # ----------------------------------------
+  # Agent 9: Knowledge Manager
+  # ----------------------------------------
+  - id: "agent-knowledge-mgr"
+    name: "Knowledge Manager Agent"
+    role: "知識管理員"
+    
+    position:
+      title: "知識庫管理專家"
+      level: "Support"
+      
+    responsibilities:
+      primary:
+        - "知識庫維護"
+        - "文檔分類和標籤"
+        - "RAG 數據質量監控"
+        - "知識更新管理"
+        
+      secondary:
+        - "知識搜索優化"
+        - "文檔去重"
+        - "過期內容清理"
+    
+    behavior:
+      style: "組織型、細致型"
+      
+      management_principles:
+        - "結構化組織"
+        - "定期審查"
+        - "質量優先於數量"
+        - "持續優化"
+    
+    tools:
+      - "knowledge_base_rw"       # 知識庫操作
+      - "rag_quality_checker"     # RAG 質量檢查
+      - "duplicate_detector"      # 重複檢測
+      - "content_classifier"      # 內容分類
+      
+    prompts:
+      system: |
+        你是知識管理員，負責維護企業知識庫質量。
+        
+        管理職責：
+        1. 審核新增文檔質量
+        2. 維護分類體系
+        3. 監控 RAG 檢索質量
+        4. 定期清理過期內容
+        
+        質量標準：
+        - 文檔結構清晰
+        - 內容準確無誤
+        - 標籤完整規範
+        - 無重複內容
+        
+        優化任務：
+        1. 識別低質量文檔 → 改進或刪除
+        2. 發現檢索盲區 → 補充內容
+        3. 分析用戶查詢 → 優化結構
+        4. 監控向量質量 → 重新嵌入
+        
+        定期任務：
+        - 每週：質量審查報告
+        - 每月：內容更新計劃
+        - 每季：全面優化
+
+# ==========================================
+# 3. 團隊可調用工具 (Team Tools)
+# ==========================================
+team_tools:
+
+  # ----------------------------------------
+  # 3.1 任務管理工具
+  # ----------------------------------------
+  - id: "task_queue_manager"
+    name: "任務隊列管理器"
+    category: "Task Management"
+    
+    purpose: "管理和調度團隊任務"
+    
+    usage_scenarios:
+      - "Coordinator 分配任務給 Agent"
+      - "Agent 領取任務"
+      - "監控任務執行狀態"
+      - "處理任務依賴關係"
+    
+    capabilities:
+      - "創建任務"
+      - "分配任務"
+      - "更新任務狀態"
+      - "查詢任務隊列"
+      - "任務優先級調整"
+    
+    usage_example: |
+      // 創建任務
+      taskQueue.create({
+        id: "task-001",
+        type: "develop_api",
+        assignedTo: "agent-backend-dev",
+        priority: "high",
+        dependencies: ["task-design-complete"],
+        data: {
+          prd: "...",
+          architecture: "..."
+        }
+      });
+      
+      // 查詢任務
+      const tasks = taskQueue.getByAgent("agent-backend-dev");
+      
+      // 更新狀態
+      taskQueue.updateStatus("task-001", "in_progress");
+
+  # ----------------------------------------
+  # 3.2 知識庫工具
+  # ----------------------------------------
+  - id: "knowledge_base_rw"
+    name: "知識庫讀寫器"
+    category: "Knowledge Management"
+    
+    purpose: "訪問和管理團隊知識庫"
+    
+    usage_scenarios:
+      - "存儲 PRD、技術文檔"
+      - "查詢歷史決策記錄"
+      - "檢索最佳實踐"
+      - "共享團隊知識"
+    
+    capabilities:
+      - "創建文檔"
+      - "更新文檔"
+      - "搜索文檔（全文 + 語義）"
+      - "文檔版本控制"
+      - "標籤管理"
+    
+    usage_example: |
+      // 創建文檔
+      kb.create({
+        type: "prd",
+        title: "用戶認證系統 PRD",
+        content: "...",
+        tags: ["authentication", "security"],
+        author: "agent-pm"
+      });
+      
+      // 語義搜索
+      const results = kb.semanticSearch("如何實現 JWT 認證");
+      
+      // 更新文檔
+      kb.update("doc-123", { content: "..." });
+
+  # ----------------------------------------
+  # 3.3 代碼執行工具
+  # ----------------------------------------
+  - id: "repl"
+    name: "代碼執行環境"
+    category: "Development"
+    
+    purpose: "執行和測試代碼"
+    
+    usage_scenarios:
+      - "測試代碼片段"
+      - "驗證邏輯正確性"
+      - "分析數據"
+      - "生成示例"
+    
+    capabilities:
+      - "執行 JavaScript/TypeScript"
+      - "訪問 Node.js API"
+      - "輸出結果和錯誤"
+    
+    usage_example: |
+      // 測試 RAG 檢索邏輯
+      const results = await vectorize.query(embedding, { topK: 5 });
+      console.log(results.map(r => r.metadata.text));
+
+  # ----------------------------------------
+  # 3.4 Web 搜索工具
+  # ----------------------------------------
+  - id: "web_search"
+    name: "Web 搜索引擎"
+    category: "Research"
+    
+    purpose: "搜索互聯網信息"
+    
+    usage_scenarios:
+      - "市場調研"
+      - "技術方案調研"
+      - "競品分析"
+      - "最新技術趨勢"
+    
+    capabilities:
+      - "關鍵詞搜索"
+      - "獲取搜索結果摘要"
+      - "訪問網頁內容"
+    
+    usage_example: |
+      // 搜索技術方案
+      const results = webSearch("Cloudflare Vectorize best practices");
+
+  # ----------------------------------------
+  # 3.5 MCP 客戶端工具
+  # ----------------------------------------
+  - id: "mcp_client"
+    name: "MCP 協議客戶端"
+    category: "Integration"
+    
+    purpose: "通過 MCP 協議爬取和整合外部數據"
+    
+    usage_scenarios:
+      - "爬取網頁內容"
+      - "整合 API 數據"
+      - "處理文件（PDF, DOCX）"
+      - "提取結構化數據"
+    
+    capabilities:
+      - "web-scrape: 網頁爬取"
+      - "api-fetch: API 調用"
+      - "file-process: 文件處理"
+      - "structured-extract: 結構化提取"
+    
+    usage_example: |
+      // 爬取網頁
+      const content = await mcp.invoke("web-scrape", {
+        url: "https://example.com",
+        waitForSelector: "article",
+        extractStructuredData: true
+      });
+      
+      // 處理 PDF
+      const text = await mcp.invoke("file-process", {
+        fileUrl: "https://example.com/doc.pdf",
+        fileType: "pdf",
+        extractText: true
+      });
+
+  # ----------------------------------------
+  # 3.6 RAG 引擎工具
+  # ----------------------------------------
+  - id: "rag_engine"
+    name: "RAG 檢索增強生成引擎"
+    category: "AI/ML"
+    
+    purpose: "實現企業級 RAG 系統"
+    
+    usage_scenarios:
+      - "攝取文檔到知識庫"
+      - "語義檢索"
+      - "生成答案"
+      - "評估檢索質量"
+    
+    capabilities:
+      - "ingest: 文檔攝取和向量化"
+      - "retrieve: 語義檢索"
+      - "generate: 基於上下文生成答案"
+      - "evaluate: 評估檢索質量"
+    
+    usage_example: |
+      // 攝取文檔
+      await rag.ingest({
+        id: "doc-001",
+        title: "API 文檔",
+        content: "...",
+        source: "internal",
+        metadata: { version: "1.0" }
+      });
+      
+      // 檢索並生成
+      const result = await rag.generateAnswer(
+        "如何認證用戶？",
+        conversationHistory
+      );
+
+  # ----------------------------------------
+  # 3.7 部署工具
+  # ----------------------------------------
+  - id: "wrangler_cli"
+    name: "Wrangler CLI"
+    category: "Deployment"
+    
+    purpose: "部署到 Cloudflare 平台"
+    
+    usage_scenarios:
+      - "部署 Workers"
+      - "部署 Pages"
+      - "管理 D1/R2/KV"
+      - "配置環境變量"
+    
+    capabilities:
+      - "deploy: 部署代碼"
+      - "d1: 管理 D1 數據庫"
+      - "r2: 管理 R2 存儲"
+      - "secret: 管理 secrets"
+      - "tail: 查看日誌"
+    
+    usage_example: |
+      # 部署 Worker
+      wrangler deploy
+      
+      # 執行 SQL
+      wrangler d1 execute ai-agent-db --file=schema.sql
+      
+      # 設置 secret
+      wrangler secret put OPENAI_API_KEY
+
+  # ----------------------------------------
+  # 3.8 備份工具
+  # ----------------------------------------
+  - id: "nas_backup_client"
+    name: "NAS 備份客戶端"
+    category: "Backup"
+    
+    purpose: "備份數據到 NAS"
+    
+    usage_scenarios:
+      - "定時備份數據庫"
+      - "同步 R2 文件"
+      - "備份向量數據"
+      - "恢復數據"
+    
+    capabilities:
+      - "backup: 創建備份"
+      - "restore: 恢復備份"
+      - "sync: 同步數據"
+      - "verify: 驗證完整性"
+    
+    usage_example: |
+      # 備份數據庫
+      nasBackup.backup({
+        type: "d1_database",
+        source: "ai-agent-db",
+        destination: "/backups/db/",
+        compression: true
+      });
+      
+      # 同步 R2
+      nasBackup.sync({
+        source: "cloudflare-r2:ai-agent-files",
+        destination: "/backups/r2/",
+        incremental: true
+      });
+
+  # ----------------------------------------
+  # 3.9 監控工具
+  # ----------------------------------------
+  - id: "monitoring_setup"
+    name: "監控和告警系統"
+    category: "Observability"
+    
+    purpose: "監控系統健康和性能"
+    
+    usage_scenarios:
+      - "設置性能監控"
+      - "配置告警規則"
+      - "查看儀表板"
+      - "分析日誌"
+    
+    capabilities:
+      - "metrics: 收集指標"
+      - "alerts: 配置告警"
+      - "dashboard: 可視化儀表板"
+      - "logs: 日誌聚合"
+    
+    usage_example: |
+      // 設置告警
+      monitoring.createAlert({
+        name: "High Error Rate",
+        condition: "error_rate > 5%",
+        notification: "email",
+        recipients: ["admin@example.com"]
+      });
+      
+      // 查詢指標
+      const metrics = monitoring.query({
+        metric: "api_response_time",
+        timeRange: "last_24h",
+        aggregation: "p95"
+      });
+
+  # ----------------------------------------
+  # 3.10 測試工具
+  # ----------------------------------------
+  - id: "test_runner"
+    name: "測試執行器"
+    category: "Testing"
+    
+    purpose: "執行自動化測試"
+    
+    usage_scenarios:
+      - "運行單元測試"
+      - "執行集成測試"
+      - "E2E 測試"
+      - "性能測試"
+    
+    capabilities:
+      - "unit: 單元測試"
+      - "integration: 集成測試"
+      - "e2e: 端到端測試"
+      - "load: 負載測試"
+    
+    usage_example: |
+      // 運行測試
+      const results = testRunner.run({
+        type: "unit",
+        pattern: "**/*.test.ts",
+        coverage: true
+      });
+      
+      console.log(`Passed: ${results.passed}/${results.total}`);
+
+# ==========================================
+# 4. 存儲備份策略 (Storage & Backup)
+# ==========================================
+storage_backup:
+
+  # ----------------------------------------
+  # 4.1 數據分類
+  # ----------------------------------------
+  data_classification:
+    - category: "關鍵數據"
+      description: "業務核心數據，丟失會造成嚴重影響"
+      items:
+        - "用戶數據（users 表）"
+        - "對話記錄（conversations, messages 表）"
+        - "知識庫文檔（documents 表）"
+        - "向量嵌入（Vectorize index）"
+      backup_frequency: "實時 + 每小時"
+      retention: "永久保留"
+      
+    - category: "重要數據"
+      description: "系統配置和日誌"
+      items:
+        - "系統配置"
+        - "環境變量"
+        - "審計日誌"
+        - "備份日誌"
+      backup_frequency: "每天"
+      retention: "保留 90 天"
+      
+    - category: "臨時數據"
+      description: "快取和臨時文件"
+      items:
+        - "KV Store 快取"
+        - "臨時上傳文件"
+      backup_frequency: "不備份"
+      retention: "7 天自動清理"
+
+  # ----------------------------------------
+  # 4.2 備份架構
+  # ----------------------------------------
+  backup_architecture:
+    
+    # Cloudflare 側
+    cloudflare_storage:
+      - component: "D1 Database"
+        size: "< 500MB"
+        backup_method:
+          - "每小時增量備份"
+          - "每天全量備份"
+          - "通過 API 導出 SQL"
+        
+      - component: "Vectorize Index"
+        size: "向量數據"
+        backup_method:
+          - "每天導出向量數據"
+          - "保存為 JSON 格式"
+          - "記錄 embedding 元數據"
+        
+      - component: "R2 Storage"
+        size: "用戶上傳文件"
+        backup_method:
+          - "使用 rclone 同步"
+          - "增量同步（僅新/改）"
+          - "每 6 小時同步一次"
+        
+      - component: "KV Store"
+        size: "快取數據"
+        backup_method:
+          - "不備份（可重建）"
+    
+    # NAS 側
+    nas_storage:
+      location: "/volume1/ai-agent-backup"
+      structure: |
+        /volume1/ai-agent-backup/
+        ├── database/
+        │   ├── full/          # 全量備份
+        │   │   ├── 2024-01-01.sql.gz
+        │   │   └── 2024-01-02.sql.gz
+        │   └── incremental/   # 增量備份
+        │       ├── 2024-01-01-01h.sql.gz
+        │       └── 2024-01-01-02h.sql.gz
+        ├── vectors/
+        │   ├── 2024-01-01-embeddings.json.gz
+        │   └── 2024-01-02-embeddings.json.gz
+        ├── r2-files/
+        │   └── [按日期組織的文件]
+        ├── logs/
+        │   └── backup-logs.json
+        └── metadata/
+            └── backup-index.json
+      
+      retention_policy:
+        - "每小時備份：保留 7 天"
+        - "每天備份：保留 30 天"
+        - "每週備份：保留 90 天"
+        - "每月備份：保留 1 年"
+
+  # ----------------------------------------
+  # 4.3 備份流程
+  # ----------------------------------------
+  backup_workflows:
+    
+    # 實時備份（Cloudflare Queues）
+    - name: "實時增量備份"
+      trigger: "數據變更事件"
+      frequency: "實時"
+      steps:
+        - "監聽數據變更事件"
+        - "將變更推送到 Queue"
+        - "Worker 處理 Queue"
+        - "發送變更到 NAS webhook"
+        - "NAS 追加到日誌文件"
+      implementation: |
+        // Cloudflare Worker
+        export default {
+          async fetch(request, env) {
+            // 攔截數據變更
+            const data = await request.json();
+            
+            // 推送到 Queue
+            await env.BACKUP_QUEUE.send({
+              type: 'incremental',
+              timestamp: Date.now(),
+              data: data
+            });
+            
+            return new Response('OK');
+          },
+          
+          async queue(batch, env) {
+            // 處理 Queue 中的備份任務
+            for (const message of batch.messages) {
+              await sendToNAS(message.body, env);
+            }
+          }
+        };
+    
+    # 定時全量備份
+    - name: "定時全量備份"
+      trigger: "Cron"
+      frequency: "每天 02:00"
+      steps:
+        - "導出 D1 數據庫"
+        - "導出 Vectorize 向量"
+        - "列出 R2 文件清單"
+        - "打包壓縮"
+        - "上傳到 NAS"
+        - "驗證完整性"
+        - "記錄備份日誌"
+        - "清理舊備份"
+      implementation: |
+        // Cron Worker
+        export default {
+          async scheduled(event, env) {
+            console.log('Starting full backup...');
+            
+            // 1. 備份 D1
+            const dbBackup = await backupD1(env);
+            
+            // 2. 備份 Vectorize
+            const vectorBackup = await backupVectorize(env);
+            
+            // 3. 同步 R2
+            await syncR2ToNAS(env);
+            
+            // 4. 上傳到 NAS
+            await uploadToNAS({
+              database: dbBackup,
+              vectors: vectorBackup,
+              timestamp: new Date().toISOString()
+            }, env);
+            
+            // 5. 驗證
+            await verifyBackup(env);
+            
+            console.log('Backup completed');
+          }
+        };
+    
+    # R2 同步（使用 rclone）
+    - name: "R2 文件同步"
+      trigger: "Cron"
+      frequency: "每 6 小時"
+      steps:
+        - "運行 rclone sync"
+        - "僅同步新增/修改文件"
+        - "驗證文件完整性"
+        - "更新同步日誌"
+      implementation: |
+        #!/bin/bash
+        # nas-sync-r2.sh
+        
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        LOG_FILE="/var/log/r2-sync-$TIMESTAMP.log"
+        
+        echo "Starting R2 sync at $TIMESTAMP" >> $LOG_FILE
+        
+        # 同步 R2 到 NAS
+        rclone sync \
+          cloudflare-r2:ai-agent-files \
+          /volume1/ai-agent-backup/r2-files/ \
+          --progress \
+          --transfers 8 \
+          --checksum \
+          --log-file=$LOG_FILE
+        
+        if [ $? -eq 0 ]; then
+          echo "R2 sync completed successfully" >> $LOG_FILE
+        else
+          echo "R2 sync failed" >> $LOG_FILE
+          # 發送告警
+          curl -X POST $ALERT_WEBHOOK \
+            -d '{"message": "R2 sync failed"}'
+        fi
+
+  # ----------------------------------------
+  # 4.4 恢復流程
+  # ----------------------------------------
+  restore_procedures:
+    
+    - name: "完全恢復（災難恢復）"
+      scenario: "Cloudflare 數據完全丟失"
+      rto: "4 小時"  # Recovery Time Objective
+      rpo: "1 小時"  # Recovery Point Objective
+      steps:
+        - "初始化新的 Cloudflare 資源"
+        - "從 NAS 下載最新全量備份"
+        - "恢復 D1 數據庫"
+        - "恢復 Vectorize 向量"
+        - "恢復 R2 文件"
+        - "應用增量備份（如有）"
+        - "驗證數據完整性"
+        - "切換 DNS 到新環境"
+      
+    - name: "部分恢復（數據誤刪）"
+      scenario: "用戶誤刪對話或文檔"
+      rto: "15 分鐘"
+      rpo: "1 小時"
+      steps:
+        - "從 NAS 查詢目標數據"
+        - "恢復到臨時表"
+        - "驗證數據正確性"
+        - "合併回主表"
+        - "通知用戶"
+      
+    - name: "時間點恢復"
+      scenario: "需要恢復到特定時間點"
+      steps:
+        - "定位時間點的全量備份"
+        - "定位該時間點後的增量備份"
+        - "按順序應用備份"
+        - "驗證數據狀態"
+
+  # ----------------------------------------
+  # 4.5 備份驗證
+  # ----------------------------------------
+  backup_verification:
+    
+    # 自動驗證
+    automated_checks:
+      - check: "完整性檢查"
+        method: "MD5/SHA256 校驗和"
+        frequency: "每次備份後"
+        
+      - check: "可恢復性測試"
+        method: "在測試環境恢復備份"
+        frequency: "每週"
+        
+      - check: "數據一致性"
+        method: "比對記錄數、關鍵字段"
+        frequency: "每天"
+    
+    # 手動驗證
+    manual_checks:
+      - check: "抽樣驗證"
+        method: "隨機抽取備份恢復驗證"
+        frequency: "每月"
+        
+      - check: "災難恢復演練"
+        method: "完整恢復流程測試"
+        frequency: "每季度"
+
+  # ----------------------------------------
+  # 4.6 監控和告警
+  # ----------------------------------------
+  monitoring_alerts:
+    
+    metrics:
+      - "備份成功率"
+      - "備份大小"
+      - "備份耗時"
+      - "NAS 存儲使用量"
+      - "數據增長速度"
+    
+    alerts:
+      - condition: "備份失敗"
+        severity: "critical"
+        action: "立即通知 DevOps"
+        
+      - condition: "備份耗時 > 30分鐘"
+        severity: "warning"
+        action: "記錄日誌，下次優化"
+        
+      - condition: "NAS 存儲 > 80%"
+        severity: "warning"
+        action: "清理舊備份或擴容"
+        
+      - condition: "數據未變更超過 24h"
+        severity: "info"
+        action: "檢查系統是否正常"
+
+  # ----------------------------------------
+  # 4.7 安全措施
+  # ----------------------------------------
+  security_measures:
+    
+    - measure: "備份加密"
+      implementation:
+        - "使用 AES-256 加密備份文件"
+        - "密鑰存儲在 Secrets Manager"
+        - "傳輸使用 TLS 1.3"
+      
+    - measure: "訪問控制"
+      implementation:
+        - "NAS 僅允許特定 IP 訪問"
+        - "使用強密碼 + SSH 密鑰"
+        - "啟用二次驗證"
+      
+    - measure: "備份隔離"
+      implementation:
+        - "備份與生產環境網絡隔離"
+        - "使用單向數據傳輸"
+        - "定期安全審計"
+      
+    - measure: "審計日誌"
+      implementation:
+        - "記錄所有備份操作"
+        - "記錄恢復操作"
+        - "定期審查異常活動"
+
+# ==========================================
+# 5. 團隊協作示例 (Collaboration Example)
+# ==========================================
+collaboration_example:
+  scenario: "用戶需求：添加用戶認證功能"
+  
+  workflow:
+    - step: 1
+      agent: "Coordinator"
+      action: "接收需求，創建任務 TASK-001"
+      output: "分配給 PM Agent"
+      
+    - step: 2
+      agent: "PM"
+      action: "分析需求，撰寫 PRD"
+      output: |
+        PRD: 用戶認證系統
+        - JWT token 認證
+        - 支持 email/password 登錄
+        - 支持 OAuth (Google, GitHub)
+        - 實現 RBAC 權限
+      tools_used: ["knowledge_base_rw", "web_search"]
+      
+    - step: 3
+      agent: "Coordinator"
+      action: "PRD 完成，分配給 Architect"
+      
+    - step: 4
+      agent: "Architect"
+      action: "設計技術方案"
+      output: |
+        技術方案：
+        - 使用 JWT + Cloudflare Access
+        - D1 存儲用戶表
+        - Workers 中實現認證中間件
+        - 集成 OAuth providers
+      tools_used: ["web_search", "knowledge_base_rw"]
+      
+    - step: 5
+      agent: "Coordinator"
+      action: "方案確認，並行分配"
+      parallel_tasks:
+        - "Backend Developer: 實現認證 API"
+        - "Frontend Developer: 實現登錄界面"
+      
+    - step: 6
+      agent: "Backend Developer"
+      action: "開發認證 API"
+      output: "實現 /api/auth/* 端點，JWT 生成和驗證"
+      tools_used: ["repl", "knowledge_base_rw"]
+      
+    - step: 7
+      agent: "Frontend Developer"
+      action: "開發登錄頁面"
+      output: "實現 Login 組件，OAuth 按鈕"
+      tools_used: ["artifact", "repl"]
+      
+    - step: 8
+      agent: "Coordinator"
+      action: "開發完成，分配給 QA"
+      
+    - step: 9
+      agent: "QA"
+      action: "執行測試"
+      output: |
+        測試結果：23/25 通過
+        Bug #1: OAuth 回調 URL 錯誤
+        Bug #2: Token 過期時間過短
+      tools_used: ["test_runner", "api_tester"]
+      
+    - step: 10
+      agent: "Coordinator"
+      action: "測試未通過，回退給 Backend Developer"
+      
+    - step: 11
+      agent: "Backend Developer"
+      action: "修復 bugs"
+      output: "已修復兩個 bugs"
+      
+    - step: 12
+      agent: "QA"
+      action: "重新測試"
+      output: "25/25 通過 ✅"
+      
+    - step: 13
+      agent: "Coordinator"
+      action: "測試通過，分配給 DevOps"
+      
+    - step: 14
+      agent: "DevOps"
+      action: "部署到生產環境"
+      output: "部署成功，配置監控"
+      tools_used: ["wrangler_cli", "monitoring_setup"]
+      
+    - step: 15
+      agent: "Data Analyst"
+      action: "監控上線後數據"
+      output: "首週註冊轉化率 15%，登錄成功率 98%"
+      
+    - step: 16
+      agent: "Knowledge Manager"
+      action: "更新知識庫"
+      output: "添加認證系統文檔到知識庫"
+      tools_used: ["knowledge_base_rw", "rag_engine"]
+
+# ==========================================
+# 附錄：配置檢查清單
+# ==========================================
+configuration_checklist:
+  initial_setup:
+    - [ ] "定義團隊規則和流程"
+    - [ ] "配置所有 Agent prompts"
+    - [ ] "設置工具權限"
+    - [ ] "初始化知識庫"
+    - [ ] "配置任務隊列"
+  
+  cloudflare_setup:
+    - [ ] "創建 D1 數據庫"
+    - [ ] "創建 Vectorize 索引"
+    - [ ] "創建 R2 存儲桶"
+    - [ ] "創建 KV 命名空間"
+    - [ ] "配置 Workers"
+    - [ ] "設置 Cron 觸發器"
+  
+  nas_setup:
+    - [ ] "配置 NAS 存儲路徑"
+    - [ ] "設置 SSH 訪問"
+    - [ ] "安裝 rclone"
+    - [ ] "配置備份腳本"
+    - [ ] "設置 crontab"
+    - [ ] "測試備份流程"
+  
+  security_setup:
+    - [ ] "配置 API 認證"
+    - [ ] "設置環境變量"
+    - [ ] "啟用備份加密"
+    - [ ] "配置防火牆規則"
+    - [ ] "設置審計日誌"
+  
+  monitoring_setup:
+    - [ ] "配置性能監控"
+    - [ ] "設置告警規則"
+    - [ ] "創建儀表板"
+    - [ ] "測試告警通知"
+  
+  testing:
+    - [ ] "測試完整工作流程"
+    - [ ] "驗證備份和恢復"
+    - [ ] "性能測試"
+    - [ ] "安全測試"
+    - [ ] "災難恢復演練"
