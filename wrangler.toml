@@ -23,7 +23,7 @@ DOMAIN = "shyangtsuen.xyz"
 [[d1_databases]]
 binding = "DB"
 database_name = "ai-agent-db"
-database_id = "your-database-id-here" # Run: wrangler d1 create ai-agent-db
+database_id = "99db8f91-db78-451a-bdc8-75dd2cf3f25b"
 
 # ==========================================
 # Vectorize Bindings (for RAG)
@@ -44,7 +44,7 @@ bucket_name = "ai-agent-files"
 # ==========================================
 [[kv_namespaces]]
 binding = "CACHE"
-id = "your-kv-id-here" # Run: wrangler kv:namespace create CACHE
+id = "ac78ef75b22f417d806008d1c948d33e"
 
 # ==========================================
 # Queue Bindings (for task processing)
@@ -83,9 +83,6 @@ crons = [
 [build]
 command = "npm run build"
 
-[build.upload]
-format = "service-worker"
-
 # ==========================================
 # Development Configuration
 # ==========================================
@@ -95,7 +92,7 @@ vars = { ENVIRONMENT = "development", LOG_LEVEL = "debug" }
 [env.development.d1_databases]
 binding = "DB"
 database_name = "ai-agent-db-dev"
-database_id = "your-dev-database-id-here"
+database_id = "ad1c82b8-d27a-4a48-9a4b-e72fa8b31eec"
 
 # ==========================================
 # Production Configuration
@@ -129,7 +126,7 @@ routes = [
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "ai-agent-db-dev"
-database_id = "your-dev-database-id-here"
+database_id = "ad1c82b8-d27a-4a48-9a4b-e72fa8b31eec"
 
 # ==========================================
 # Limits and Performance
