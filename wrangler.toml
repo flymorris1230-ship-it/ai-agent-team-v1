@@ -35,9 +35,11 @@ index_name = "ai-agent-vectors"
 # ==========================================
 # R2 Storage Bindings
 # ==========================================
-[[r2_buckets]]
-binding = "STORAGE"
-bucket_name = "ai-agent-files"
+# Note: R2 needs to be enabled in Cloudflare Dashboard first
+# Uncomment when R2 is enabled:
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "ai-agent-files"
 
 # ==========================================
 # KV Namespace Bindings (for caching)
@@ -49,33 +51,28 @@ id = "ac78ef75b22f417d806008d1c948d33e"
 # ==========================================
 # Queue Bindings (for task processing)
 # ==========================================
-[[queues.producers]]
-binding = "TASK_QUEUE"
-queue = "ai-agent-tasks"
-
-[[queues.consumers]]
-queue = "ai-agent-tasks"
-max_batch_size = 10
-max_batch_timeout = 30
-
-[[queues.producers]]
-binding = "BACKUP_QUEUE"
-queue = "ai-agent-backups"
-
-[[queues.consumers]]
-queue = "ai-agent-backups"
-max_batch_size = 5
-max_batch_timeout = 60
+# Note: Queues require Workers Paid plan
+# Uncomment when upgraded:
+# [[queues.producers]]
+# binding = "TASK_QUEUE"
+# queue = "ai-agent-tasks"
+#
+# [[queues.consumers]]
+# queue = "ai-agent-tasks"
+# max_batch_size = 10
+# max_batch_timeout = 30
 
 # ==========================================
 # Cron Triggers (for scheduled tasks)
 # ==========================================
-[triggers]
-crons = [
-  "0 2 * * *",    # Daily full backup at 2 AM
-  "0 */6 * * *",  # R2 sync every 6 hours
-  "0 * * * *"     # Hourly incremental backup
-]
+# Note: Cron triggers require Workers Paid plan
+# Uncomment when upgraded:
+# [triggers]
+# crons = [
+#   "0 2 * * *",    # Daily full backup at 2 AM
+#   "0 */6 * * *",  # R2 sync every 6 hours
+#   "0 * * * *"     # Hourly incremental backup
+# ]
 
 # ==========================================
 # Build Configuration
@@ -89,7 +86,7 @@ command = "npm run build"
 [env.development]
 vars = { ENVIRONMENT = "development", LOG_LEVEL = "debug" }
 
-[env.development.d1_databases]
+[[env.development.d1_databases]]
 binding = "DB"
 database_name = "ai-agent-db-dev"
 database_id = "ad1c82b8-d27a-4a48-9a4b-e72fa8b31eec"
