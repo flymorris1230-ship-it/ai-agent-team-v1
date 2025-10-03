@@ -1,0 +1,106 @@
+name = "ai-agent-team"
+main = "src/main/js/index.ts"
+compatibility_date = "2024-01-01"
+
+# ==========================================
+# Workers Configuration
+# ==========================================
+[vars]
+ENVIRONMENT = "development"
+LOG_LEVEL = "info"
+
+# ==========================================
+# D1 Database Bindings
+# ==========================================
+[[d1_databases]]
+binding = "DB"
+database_name = "ai-agent-db"
+database_id = "your-database-id-here" # Run: wrangler d1 create ai-agent-db
+
+# ==========================================
+# Vectorize Bindings (for RAG)
+# ==========================================
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "ai-agent-vectors"
+
+# ==========================================
+# R2 Storage Bindings
+# ==========================================
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "ai-agent-files"
+
+# ==========================================
+# KV Namespace Bindings (for caching)
+# ==========================================
+[[kv_namespaces]]
+binding = "CACHE"
+id = "your-kv-id-here" # Run: wrangler kv:namespace create CACHE
+
+# ==========================================
+# Queue Bindings (for task processing)
+# ==========================================
+[[queues.producers]]
+binding = "TASK_QUEUE"
+queue = "ai-agent-tasks"
+
+[[queues.consumers]]
+queue = "ai-agent-tasks"
+max_batch_size = 10
+max_batch_timeout = 30
+
+[[queues.producers]]
+binding = "BACKUP_QUEUE"
+queue = "ai-agent-backups"
+
+[[queues.consumers]]
+queue = "ai-agent-backups"
+max_batch_size = 5
+max_batch_timeout = 60
+
+# ==========================================
+# Cron Triggers (for scheduled tasks)
+# ==========================================
+[triggers]
+crons = [
+  "0 2 * * *",    # Daily full backup at 2 AM
+  "0 */6 * * *",  # R2 sync every 6 hours
+  "0 * * * *"     # Hourly incremental backup
+]
+
+# ==========================================
+# Build Configuration
+# ==========================================
+[build]
+command = "npm run build"
+
+[build.upload]
+format = "service-worker"
+
+# ==========================================
+# Development Configuration
+# ==========================================
+[env.development]
+vars = { ENVIRONMENT = "development", LOG_LEVEL = "debug" }
+
+[env.development.d1_databases]
+binding = "DB"
+database_name = "ai-agent-db-dev"
+database_id = "your-dev-database-id-here"
+
+# ==========================================
+# Production Configuration
+# ==========================================
+[env.production]
+vars = { ENVIRONMENT = "production", LOG_LEVEL = "info" }
+
+[env.production.d1_databases]
+binding = "DB"
+database_name = "ai-agent-db-prod"
+database_id = "your-prod-database-id-here"
+
+# ==========================================
+# Limits and Performance
+# ==========================================
+limits = { cpu_ms = 50000 }
