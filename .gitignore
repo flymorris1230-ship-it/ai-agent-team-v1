@@ -41,9 +41,13 @@ logs/
 
 # Output files
 *.csv
-*.json
+# *.json  # Commented out - we need package.json, tsconfig.json, etc.
 *.xlsx
 output/
+# Exclude specific JSON output files
+output/**/*.json
+data/**/*.json
+experiments/**/*.json
 
 # AI/ML specific
 *.pkl

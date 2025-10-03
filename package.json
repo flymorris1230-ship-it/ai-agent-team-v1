@@ -1,0 +1,58 @@
+{
+  "name": "ai-agent-team-v1",
+  "version": "1.0.0",
+  "description": "Cloudflare + NAS + RAG + MCP Enterprise AI Agent Team System",
+  "main": "src/main/js/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "tsc && wrangler deploy --dry-run",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint 'src/**/*.{ts,js}'",
+    "lint:fix": "eslint 'src/**/*.{ts,js}' --fix",
+    "format": "prettier --write 'src/**/*.{ts,js,json}'",
+    "format:check": "prettier --check 'src/**/*.{ts,js,json}'",
+    "typecheck": "tsc --noEmit",
+    "db:init": "wrangler d1 execute DB --file=./scripts/schema.sql",
+    "db:init:dev": "wrangler d1 execute DB --env development --file=./scripts/schema.sql",
+    "db:migrate": "wrangler d1 migrations apply DB",
+    "db:list": "wrangler d1 list",
+    "logs": "wrangler tail",
+    "clean": "rm -rf dist .wrangler"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "cloudflare",
+    "workers",
+    "rag",
+    "mcp",
+    "typescript"
+  ],
+  "author": "Chang Ho Chien | HC AI 說人話channel",
+  "license": "MIT",
+  "dependencies": {
+    "hono": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "@vitest/coverage-v8": "^1.0.4",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.4",
+    "wrangler": "^3.95.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

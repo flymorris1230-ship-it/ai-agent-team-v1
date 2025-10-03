@@ -1,0 +1,57 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "jsx": "react",
+
+    /* Modules */
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+
+    /* JavaScript Support */
+    "allowJs": true,
+    "checkJs": false,
+
+    /* Emit */
+    "noEmit": true,
+    "sourceMap": true,
+
+    /* Interop Constraints */
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+
+    /* Type Checking */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+
+    /* Cloudflare Workers */
+    "types": ["@cloudflare/workers-types", "node"],
+    "paths": {
+      "@/*": ["./src/main/js/*"],
+      "@core/*": ["./src/main/js/core/*"],
+      "@agents/*": ["./src/main/js/agents/*"],
+      "@api/*": ["./src/main/js/api/*"],
+      "@utils/*": ["./src/main/js/utils/*"],
+      "@types/*": ["./src/main/js/types/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".wrangler"
+  ]
+}
