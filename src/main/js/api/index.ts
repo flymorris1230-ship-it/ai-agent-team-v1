@@ -1,0 +1,95 @@
+/**
+ * API Router - Main entry point for all API routes
+ */
+
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
+import { prettyJSON } from 'hono/pretty-json';
+import type { Env } from '../types';
+
+// Import route handlers
+import { chatRoutes } from './routes/chat';
+import { documentRoutes } from './routes/documents';
+import { taskRoutes } from './routes/tasks';
+import { agentRoutes } from './routes/agents';
+import { knowledgeRoutes } from './routes/knowledge';
+import { authRoutes } from './routes/auth';
+import { healthRoutes } from './routes/health';
+
+// Create Hono app
+const app = new Hono<{ Bindings: Env }>();
+
+// Global middleware
+app.use('*', logger());
+app.use('*', prettyJSON());
+app.use(
+  '*',
+  cors({
+    origin: ['http://localhost:3000', 'https://yourapp.com'],
+    credentials: true,
+  })
+);
+
+// Root endpoint
+app.get('/', (c) => {
+  return c.json({
+    name: 'AI Agent Team API',
+    version: '1.0.0',
+    status: 'operational',
+    endpoints: {
+      auth: '/api/v1/auth',
+      chat: '/api/v1/chat',
+      documents: '/api/v1/documents',
+      tasks: '/api/v1/tasks',
+      agents: '/api/v1/agents',
+      knowledge: '/api/v1/knowledge',
+      health: '/api/v1/health',
+    },
+    documentation: '/api/v1/docs',
+  });
+});
+
+// API v1 routes
+const apiV1 = new Hono<{ Bindings: Env }>();
+
+apiV1.route('/auth', authRoutes);
+apiV1.route('/chat', chatRoutes);
+apiV1.route('/documents', documentRoutes);
+apiV1.route('/tasks', taskRoutes);
+apiV1.route('/agents', agentRoutes);
+apiV1.route('/knowledge', knowledgeRoutes);
+apiV1.route('/health', healthRoutes);
+
+app.route('/api/v1', apiV1);
+
+// 404 handler
+app.notFound((c) => {
+  return c.json(
+    {
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'The requested endpoint does not exist',
+      },
+    },
+    404
+  );
+});
+
+// Error handler
+app.onError((err, c) => {
+  console.error('API Error:', err);
+  return c.json(
+    {
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: err.message || 'An unexpected error occurred',
+      },
+    },
+    500
+  );
+});
+
+export default app;
