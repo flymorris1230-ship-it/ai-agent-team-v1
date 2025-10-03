@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres-proxy:
+    build: .
+    container_name: postgres-proxy
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=192.168.1.114
+      - POSTGRES_PORT=5532
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Morris1230
+      - PROXY_API_KEY=${PROXY_API_KEY:-your-secure-api-key-here}
+    restart: unless-stopped
+    networks:
+      - ai-agent-network
+
+networks:
+  ai-agent-network:
+    driver: bridge

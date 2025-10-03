@@ -42,32 +42,43 @@ export class PostgresClient {
       password: config?.password || databaseConfig.postgres.password
     };
 
-    // PostgreSQL HTTP endpoint (using PostgREST or similar)
-    this.baseUrl = `http://${this.config.host}:${this.config.port}`;
+    // PostgreSQL HTTP Proxy endpoint (running on NAS)
+    // Default: http://192.168.1.114:8000
+    this.baseUrl = `http://${this.config.host}:8000`;
   }
 
   /**
-   * Execute raw SQL query
+   * Execute raw SQL query via HTTP proxy
    */
   async query<T = any>(sql: string, params: any[] = []): Promise<QueryResult<T>> {
-    // Note: This is a placeholder implementation
-    // In production, you would use:
-    // 1. Cloudflare Workers TCP Sockets (when available)
-    // 2. PostgREST API
-    // 3. Cloudflare Tunnel to NAS
-    // 4. Or a dedicated proxy service
+    try {
+      const response = await fetch(`${this.baseUrl}/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.POSTGRES_PROXY_API_KEY || 'your-secure-api-key-here'
+        },
+        body: JSON.stringify({ sql, params })
+      });
 
-    console.log('PostgreSQL Query:', sql, params);
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`PostgreSQL proxy error: ${response.status} - ${error}`);
+      }
 
-    // For now, return mock structure
-    return {
-      rows: [],
-      rowCount: 0
-    };
+      const result = await response.json();
+      return {
+        rows: result.rows || [],
+        rowCount: result.rowCount || 0
+      };
+    } catch (error) {
+      console.error('PostgreSQL query failed:', error);
+      throw error;
+    }
   }
 
   /**
-   * Vector similarity search using pgvector
+   * Vector similarity search using pgvector via HTTP proxy
    */
   async vectorSearch<T = any>(
     table: string,
@@ -76,24 +87,36 @@ export class PostgresClient {
   ): Promise<QueryResult<T & { similarity: number }>> {
     const { limit = 10, threshold = 0.7, metric = 'cosine' } = options;
 
-    const operator = metric === 'cosine' ? '<=>' :
-                     metric === 'l2' ? '<->' :
-                     '<#>';
+    try {
+      const response = await fetch(`${this.baseUrl}/vector-search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': process.env.POSTGRES_PROXY_API_KEY || 'your-secure-api-key-here'
+        },
+        body: JSON.stringify({
+          table,
+          embedding,
+          limit,
+          threshold,
+          metric
+        })
+      });
 
-    const sql = `
-      SELECT *,
-             1 - (embedding ${operator} $1::vector) AS similarity
-      FROM ${table}
-      WHERE 1 - (embedding ${operator} $1::vector) >= $2
-      ORDER BY embedding ${operator} $1::vector
-      LIMIT $3
-    `;
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Vector search error: ${response.status} - ${error}`);
+      }
 
-    return this.query<T & { similarity: number }>(sql, [
-      `[${embedding.join(',')}]`,
-      threshold,
-      limit
-    ]);
+      const result = await response.json();
+      return {
+        rows: result.rows || [],
+        rowCount: result.rowCount || 0
+      };
+    } catch (error) {
+      console.error('Vector search failed:', error);
+      throw error;
+    }
   }
 
   /**
