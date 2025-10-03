@@ -3,11 +3,19 @@ main = "src/main/js/index.ts"
 compatibility_date = "2024-01-01"
 
 # ==========================================
+# Custom Domain Configuration
+# ==========================================
+# Primary API endpoint: api.shyangtsuen.xyz
+# Admin interface: admin.shyangtsuen.xyz (future)
+# Knowledge base: kb.shyangtsuen.xyz (future)
+
+# ==========================================
 # Workers Configuration
 # ==========================================
 [vars]
 ENVIRONMENT = "development"
 LOG_LEVEL = "info"
+DOMAIN = "shyangtsuen.xyz"
 
 # ==========================================
 # D1 Database Bindings
@@ -93,12 +101,35 @@ database_id = "your-dev-database-id-here"
 # Production Configuration
 # ==========================================
 [env.production]
-vars = { ENVIRONMENT = "production", LOG_LEVEL = "info" }
+name = "ai-agent-team-prod"
+vars = { ENVIRONMENT = "production", LOG_LEVEL = "info", DOMAIN = "shyangtsuen.xyz" }
 
-[env.production.d1_databases]
+# Custom domain routes for production
+# After deployment, run: npx wrangler deployments domains add api.shyangtsuen.xyz
+routes = [
+  { pattern = "api.shyangtsuen.xyz/*", zone_name = "shyangtsuen.xyz" }
+]
+
+[[env.production.d1_databases]]
 binding = "DB"
 database_name = "ai-agent-db-prod"
 database_id = "your-prod-database-id-here"
+
+# ==========================================
+# Staging Configuration (Optional)
+# ==========================================
+[env.staging]
+name = "ai-agent-team-staging"
+vars = { ENVIRONMENT = "staging", LOG_LEVEL = "debug", DOMAIN = "shyangtsuen.xyz" }
+
+routes = [
+  { pattern = "api-staging.shyangtsuen.xyz/*", zone_name = "shyangtsuen.xyz" }
+]
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "ai-agent-db-dev"
+database_id = "your-dev-database-id-here"
 
 # ==========================================
 # Limits and Performance
