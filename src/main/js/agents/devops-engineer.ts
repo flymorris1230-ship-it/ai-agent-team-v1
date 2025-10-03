@@ -32,7 +32,7 @@ export class DevOpsEngineerAgent {
   private logger: Logger;
   private agentId: AgentId = 'agent-devops';
 
-  constructor(private env: Env) {
+  constructor(env: Env) {
     this.logger = new Logger(env, 'DevOpsEngineerAgent');
   }
 
@@ -133,7 +133,7 @@ export class DevOpsEngineerAgent {
   /**
    * Configure monitoring and alerting
    */
-  private async configureMonitoring(config: DeploymentConfig): Promise<{
+  private async configureMonitoring(_config: DeploymentConfig): Promise<{
     configured: boolean;
     metrics: string[];
   }> {
@@ -186,30 +186,30 @@ export class DevOpsEngineerAgent {
   /**
    * Setup health checks
    */
-  private async setupHealthChecks(config: DeploymentConfig): Promise<string> {
+  private async setupHealthChecks(_config: DeploymentConfig): Promise<string> {
     const healthCheckEndpoint = `/api/v1/health`;
 
     await this.logger.info('Setting up health checks', { endpoint: healthCheckEndpoint }, this.agentId);
 
-    // Health check configuration
-    const healthCheck = {
-      endpoint: healthCheckEndpoint,
-      interval: '60s',
-      timeout: '5s',
-      checks: [
-        'database_connection',
-        'vectorize_availability',
-        'r2_storage_access',
-        'queue_status',
-      ],
-    };
+    // Health check configuration - stored for future reference
+    // const _healthCheck = {
+    //   endpoint: healthCheckEndpoint,
+    //   interval: '60s',
+    //   timeout: '5s',
+    //   checks: [
+    //     'database_connection',
+    //     'vectorize_availability',
+    //     'r2_storage_access',
+    //     'queue_status',
+    //   ],
+    // };
 
     // In production: Configure Cloudflare Health Checks
     // wrangler health-check create --path ${healthCheckEndpoint}
 
-    const baseUrl = config.environment === 'production'
+    const baseUrl = _config.environment === 'production'
       ? 'https://api.yourproject.com'
-      : `https://ai-agent-${config.environment}.workers.dev`;
+      : `https://ai-agent-${_config.environment}.workers.dev`;
 
     return `${baseUrl}${healthCheckEndpoint}`;
   }
@@ -295,47 +295,8 @@ ${deployment.status === 'success'
     await this.logger.info('Setting up CI/CD pipeline', { stages }, this.agentId);
 
     // In production: Configure GitHub Actions or GitLab CI
-    const githubActionsWorkflow = `
-name: Deploy AI Agent Team
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run test
-
-  deploy-staging:
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: \${{ secrets.CLOUDFLARE_API_TOKEN }}
-          environment: staging
-
-  deploy-production:
-    needs: deploy-staging
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: \${{ secrets.CLOUDFLARE_API_TOKEN }}
-          environment: production
-`;
+    // GitHub Actions workflow template would be created here
+    // Example: .github/workflows/deploy.yml with test, staging, and production jobs
 
     return {
       pipeline_configured: true,

@@ -3,7 +3,7 @@
  * Handles document storage, retrieval, and RAG operations
  */
 
-import type { Env, Document, DocumentChunk, KnowledgeEntry, KnowledgeEntryType, AgentId } from '../types';
+import type { Env, KnowledgeEntry, KnowledgeEntryType, AgentId } from '../types';
 import { Logger } from '../utils/logger';
 import { RAGEngine } from './rag-engine';
 
@@ -269,3 +269,6 @@ export class KnowledgeBase {
     } as KnowledgeEntry;
   }
 }
+
+// Export alias for backward compatibility
+export { KnowledgeBase as KnowledgeBaseManager };

@@ -3,11 +3,11 @@
  */
 
 import { Hono } from 'hono';
-import type { Env } from '../../types';
+import type { Env, JWTPayload } from '../../types';
 import { authMiddleware } from '../middleware/auth';
 import { RAGEngine } from '../../core/rag-engine';
 
-export const documentRoutes = new Hono<{ Bindings: Env }>();
+export const documentRoutes = new Hono<{ Bindings: Env; Variables: { user: JWTPayload } }>();
 
 // Apply auth middleware to all document routes
 documentRoutes.use('*', authMiddleware);
@@ -282,10 +282,10 @@ documentRoutes.post('/:id/reindex', async (c) => {
         values: embedding,
         metadata: {
           document_id: documentId,
-          title: document.title,
-          content_type: document.content_type || 'text',
-          category: document.category || null,
-        },
+          title: document.title as string,
+          content_type: (document.content_type as string) || 'text',
+          category: (document.category as string) || '',
+        } as Record<string, string>,
       },
     ]);
 

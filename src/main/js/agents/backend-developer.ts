@@ -14,7 +14,7 @@ export class BackendDeveloperAgent {
   private knowledgeBase: KnowledgeBaseManager;
   private agentId: AgentId = 'agent-backend-dev';
 
-  constructor(private env: Env) {
+  constructor(env: Env) {
     this.logger = new Logger(env, 'BackendDeveloperAgent');
     this.taskQueue = new TaskQueueManager(env);
     this.knowledgeBase = new KnowledgeBaseManager(env);
@@ -88,11 +88,11 @@ export class BackendDeveloperAgent {
         error_handling: 'Comprehensive error handling implemented',
         tests: 'Unit tests written',
       },
-      documentation: docs.map((d) => d.content).join('\n\n'),
+      documentation: docs.map((d: any) => d.content).join('\n\n'),
     };
 
     // Store implementation in knowledge base
-    await this.knowledgeBase.createKnowledgeEntry({
+    await this.knowledgeBase.createEntry({
       type: 'architecture',
       title: `API Implementation: ${apiSpec.endpoint}`,
       content: JSON.stringify(apiSpec, null, 2),
@@ -115,8 +115,8 @@ export class BackendDeveloperAgent {
     await this.logger.info('Implementing feature', { task }, this.agentId);
 
     // Search for relevant PRD and architecture documents
-    const prdDocs = await this.knowledgeBase.getKnowledgeEntriesByType('prd', 5);
-    const archDocs = await this.knowledgeBase.getKnowledgeEntriesByType('architecture', 5);
+    const prdDocs = await this.knowledgeBase.getEntriesByType('prd', 5);
+    const archDocs = await this.knowledgeBase.getEntriesByType('architecture', 5);
 
     // Feature implementation plan
     const implementation = {
@@ -155,7 +155,7 @@ export class BackendDeveloperAgent {
     };
 
     // Document the implementation
-    await this.knowledgeBase.createKnowledgeEntry({
+    await this.knowledgeBase.createEntry({
       type: 'best_practice',
       title: `Feature Implementation: ${task.title}`,
       content: JSON.stringify(implementation, null, 2),
@@ -228,7 +228,7 @@ export class BackendDeveloperAgent {
     doc += `curl -X ${endpoint.method} https://api.example.com${endpoint.path}\n`;
     doc += `\`\`\`\n`;
 
-    await this.knowledgeBase.createKnowledgeEntry({
+    await this.knowledgeBase.createEntry({
       type: 'architecture',
       title: `API Doc: ${endpoint.method} ${endpoint.path}`,
       content: doc,

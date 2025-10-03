@@ -196,7 +196,7 @@ authRoutes.post('/login', async (c) => {
  */
 authRoutes.post('/refresh', async (c) => {
   try {
-    const { refresh_token } = await c.req.json();
+    const { refresh_token: _refresh_token } = await c.req.json();
 
     // Verify refresh token (simplified)
     // In production, store refresh tokens in database

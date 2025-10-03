@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "build": "tsc && wrangler deploy --dry-run",
+    "build": "tsc",
+    "build:test": "tsc && wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",
     "deploy:production": "wrangler deploy --env production",

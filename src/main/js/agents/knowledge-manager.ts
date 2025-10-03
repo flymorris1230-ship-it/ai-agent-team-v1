@@ -3,7 +3,7 @@
  * Maintains and optimizes the knowledge base
  */
 
-import type { Env, Task, AgentId, Document, KnowledgeEntry } from '../types';
+import type { Env, Task, AgentId, Document } from '../types';
 import { Logger } from '../utils/logger';
 import { KnowledgeBase } from '../core/knowledge-base';
 

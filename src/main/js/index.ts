@@ -44,7 +44,7 @@ export default {
     }
   },
 
-  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+  async scheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
     const logger = new Logger(env, 'ScheduledHandler');
     await logger.info(`Running scheduled event at ${new Date(event.scheduledTime).toISOString()}`);
 

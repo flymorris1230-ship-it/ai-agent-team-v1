@@ -3,14 +3,13 @@
  */
 
 import { Context, Next } from 'hono';
-import type { Env } from '../../types';
+import type { Env, JWTPayload as JWTPayloadType } from '../../types';
 
-export interface JWTPayload {
-  user_id: string;
-  email: string;
-  role: 'user' | 'admin';
-  exp: number;
-}
+// Re-export JWTPayload for backward compatibility
+export type JWTPayload = JWTPayloadType;
+
+// Define the context type with Variables
+type AppContext = Context<{ Bindings: Env; Variables: { user: JWTPayload } }>;
 
 /**
  * Verify JWT token
@@ -28,7 +27,7 @@ export async function verifyToken(token: string, secret: string): Promise<JWTPay
     const decodedPayload = JSON.parse(atob(payload)) as JWTPayload;
 
     // Check expiration
-    if (decodedPayload.exp * 1000 < Date.now()) {
+    if (decodedPayload.exp && decodedPayload.exp * 1000 < Date.now()) {
       return null;
     }
 
@@ -60,7 +59,7 @@ export async function verifyToken(token: string, secret: string): Promise<JWTPay
 /**
  * Authentication middleware
  */
-export async function authMiddleware(c: Context<{ Bindings: Env }>, next: Next) {
+export async function authMiddleware(c: AppContext, next: Next): Promise<Response | void> {
   const authHeader = c.req.header('Authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -101,7 +100,7 @@ export async function authMiddleware(c: Context<{ Bindings: Env }>, next: Next) 
 /**
  * Admin-only middleware
  */
-export async function adminOnly(c: Context<{ Bindings: Env }>, next: Next) {
+export async function adminOnly(c: AppContext, next: Next): Promise<Response | void> {
   const user = c.get('user') as JWTPayload;
 
   if (!user || user.role !== 'admin') {

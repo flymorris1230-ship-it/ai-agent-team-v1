@@ -3,11 +3,11 @@
  */
 
 import { Hono } from 'hono';
-import type { Env, TaskType, TaskPriority } from '../../types';
+import type { Env, TaskType, TaskPriority, JWTPayload } from '../../types';
 import { authMiddleware } from '../middleware/auth';
 import { TaskQueueManager } from '../../core/task-queue';
 
-export const taskRoutes = new Hono<{ Bindings: Env }>();
+export const taskRoutes = new Hono<{ Bindings: Env; Variables: { user: JWTPayload } }>();
 
 // Apply auth middleware to all task routes
 taskRoutes.use('*', authMiddleware);
@@ -37,7 +37,7 @@ taskRoutes.post('/', async (c) => {
       title,
       description,
       priority: priority as TaskPriority || 'medium',
-      created_by: user.user_id,
+      created_by: user?.user_id || 'unknown',
       dependencies,
       input_data,
       deadline,

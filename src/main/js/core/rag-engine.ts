@@ -5,7 +5,8 @@
 
 import type { Env, RAGQuery, RAGResult, RetrievalSource, Message } from '../types';
 import { Logger } from '../utils/logger';
-import { KnowledgeBaseManager } from './knowledge-base';
+// KnowledgeBaseManager import kept for backward compatibility
+// import { KnowledgeBaseManager } from './knowledge-base';
 
 export interface EmbeddingResponse {
   embedding: number[];
@@ -29,13 +30,11 @@ export interface ChatCompletionResponse {
 
 export class RAGEngine {
   private logger: Logger;
-  private knowledgeBase: KnowledgeBaseManager;
   private embeddingModel = 'text-embedding-3-small';
   private chatModel = 'gpt-4o-mini';
 
   constructor(private env: Env) {
     this.logger = new Logger(env, 'RAGEngine');
-    this.knowledgeBase = new KnowledgeBaseManager(env);
   }
 
   /**

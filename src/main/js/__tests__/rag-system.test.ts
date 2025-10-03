@@ -15,8 +15,8 @@ const mockEnv = {
   POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD || '',
   POSTGRES_PROXY_API_KEY: process.env.POSTGRES_PROXY_API_KEY || '',
   DB: {
-    prepare: (sql: string) => ({
-      bind: (...args: any[]) => ({
+    prepare: (_sql: string) => ({
+      bind: (..._args: any[]) => ({
         all: async () => ({ results: [], success: true }),
         first: async () => null,
         run: async () => ({ success: true })

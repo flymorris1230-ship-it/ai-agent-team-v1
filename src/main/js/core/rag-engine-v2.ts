@@ -96,7 +96,7 @@ export class RAGEngineV2 {
   private async retrieveWithHybridSearch(
     queryEmbedding: number[],
     topK: number,
-    filter?: Record<string, any>
+    _filter?: Record<string, any>
   ): Promise<RetrievalSource[]> {
     const sources: RetrievalSource[] = [];
 

@@ -299,7 +299,7 @@ export class DataAnalystAgent {
   /**
    * Generate visualization charts
    */
-  private async generateCharts(metrics: Metric[]): Promise<ChartData[]> {
+  private async generateCharts(_metrics: Metric[]): Promise<ChartData[]> {
     const charts: ChartData[] = [];
 
     // Response time trend chart
@@ -431,7 +431,7 @@ ${input.insights.filter((i) => i.type === 'negative').length} issues requiring a
   /**
    * Perform A/B test analysis
    */
-  async analyzeABTest(testId: string): Promise<{
+  async analyzeABTest(_testId: string): Promise<{
     variant_a_performance: number;
     variant_b_performance: number;
     winner: 'A' | 'B' | 'inconclusive';

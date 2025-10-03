@@ -3,11 +3,11 @@
  */
 
 import { Hono } from 'hono';
-import type { Env } from '../../types';
+import type { Env, JWTPayload } from '../../types';
 import { authMiddleware } from '../middleware/auth';
 import { RAGEngine } from '../../core/rag-engine';
 
-export const chatRoutes = new Hono<{ Bindings: Env }>();
+export const chatRoutes = new Hono<{ Bindings: Env; Variables: { user: JWTPayload } }>();
 
 // Apply auth middleware to all chat routes
 chatRoutes.use('*', authMiddleware);

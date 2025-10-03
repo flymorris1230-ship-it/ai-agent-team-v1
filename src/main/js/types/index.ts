@@ -270,6 +270,17 @@ export interface BackupLog {
 }
 
 // ==========================================
+// Auth Types
+// ==========================================
+export interface JWTPayload {
+  user_id: string;
+  email: string;
+  role: 'user' | 'admin';
+  iat?: number;
+  exp?: number;
+}
+
+// ==========================================
 // API Request/Response Types
 // ==========================================
 export interface APIResponse<T = unknown> {

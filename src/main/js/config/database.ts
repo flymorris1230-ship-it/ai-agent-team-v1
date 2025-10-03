@@ -25,7 +25,7 @@ export interface DatabaseConfig {
   // Data sync strategy
   sync: {
     enabled: boolean;
-    direction: 'bidirectional' | 'd1-to-postgres' | 'postgres-to-d1';
+    direction: 'bidirectional' | 'to-postgres' | 'to-d1';
     interval: number; // seconds
     tables: string[];
   };

@@ -138,9 +138,9 @@ export class Logger {
 
     const result = await env.DB.prepare(query).bind(...params).all();
 
-    return (result.results as SystemLog[]).map((log) => ({
+    return (result.results as unknown as SystemLog[]).map((log) => ({
       ...log,
-      details: log.details ? JSON.parse(log.details as string) : undefined,
+      details: log.details ? JSON.parse(log.details as unknown as string) : undefined,
     }));
   }
 }

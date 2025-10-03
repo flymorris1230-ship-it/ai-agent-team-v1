@@ -390,7 +390,7 @@ export class AgentOrchestrator {
     const agents = await this.env.DB.prepare('SELECT * FROM agents').all();
 
     for (const agent of agents.results) {
-      const agentId = (agent as Agent).id;
+      const agentId = (agent as unknown as Agent).id;
       const tasks = await this.taskQueue.getTasksByAgent(agentId, 1000);
       const activeTasks = tasks.filter((t) => t.status === 'in_progress' || t.status === 'assigned');
       agentLoads[agentId] = activeTasks.length;

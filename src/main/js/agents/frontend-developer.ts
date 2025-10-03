@@ -21,7 +21,7 @@ export class FrontendDeveloperAgent {
   private logger: Logger;
   private agentId: AgentId = 'agent-frontend-dev';
 
-  constructor(private env: Env) {
+  constructor(env: Env) {
     this.logger = new Logger(env, 'FrontendDeveloperAgent');
   }
 
@@ -61,7 +61,7 @@ export class FrontendDeveloperAgent {
   /**
    * Generate UI components
    */
-  private async generateComponents(task: Task): Promise<UIComponent[]> {
+  private async generateComponents(_task: Task): Promise<UIComponent[]> {
     const components: UIComponent[] = [];
 
     // Chat Interface Component
@@ -214,7 +214,7 @@ export const KnowledgeBrowser: React.FC = () => {
   /**
    * Implement API integration
    */
-  private async implementAPIIntegration(task: Task): Promise<string[]> {
+  private async implementAPIIntegration(_task: Task): Promise<string[]> {
     const apiEndpoints = [
       '/api/v1/chat - POST - Send message and get RAG response',
       '/api/v1/documents - POST - Upload document',
@@ -224,39 +224,10 @@ export const KnowledgeBrowser: React.FC = () => {
       '/api/v1/agents - GET - List agents status',
     ];
 
-    // Generate API client
-    const apiClient = `
-// API Client with interceptors
-import axios from 'axios';
-
-const apiClient = axios.create({
-  baseURL: '/api/v1',
-  timeout: 10000,
-});
-
-// Request interceptor for auth
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token');
-  if (token) {
-    config.headers.Authorization = \`Bearer \${token}\`;
-  }
-  return config;
-});
-
-// Response interceptor for error handling
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Redirect to login
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
-
-export default apiClient;
-`;
+    // API client template would be generated here with:
+    // - axios setup with baseURL and timeout
+    // - Request interceptor for auth tokens
+    // - Response interceptor for error handling
 
     await this.logger.info('API integration implemented', { endpoints: apiEndpoints.length }, this.agentId);
 
@@ -266,7 +237,7 @@ export default apiClient;
   /**
    * Setup state management
    */
-  private async setupStateManagement(components: UIComponent[]): Promise<string> {
+  private async setupStateManagement(_components: UIComponent[]): Promise<string> {
     const stateManagementCode = `
 // State management using Zustand
 import { create } from 'zustand';
@@ -306,7 +277,7 @@ export const useAppStore = create<AppState>((set) => ({
   /**
    * Optimize performance
    */
-  private async optimizePerformance(components: UIComponent[]): Promise<Record<string, number>> {
+  private async optimizePerformance(_components: UIComponent[]): Promise<Record<string, number>> {
     const metrics = {
       initial_load_time_ms: 1200,
       time_to_interactive_ms: 1800,
@@ -315,29 +286,12 @@ export const useAppStore = create<AppState>((set) => ({
       code_split_chunks: 5,
     };
 
-    // Performance optimization techniques
-    const optimizations = `
-// 1. Code splitting
-const ChatInterface = lazy(() => import('./components/ChatInterface'));
-const DocumentUpload = lazy(() => import('./components/DocumentUpload'));
-
-// 2. Memoization
-const MessageList = memo(({ messages }) => {
-  return messages.map((msg) => <Message key={msg.id} {...msg} />);
-});
-
-// 3. Virtual scrolling for long lists
-import { FixedSizeList } from 'react-window';
-
-// 4. Image optimization
-import Image from 'next/image';
-
-// 5. Debouncing search
-const debouncedSearch = useMemo(
-  () => debounce((query) => performSearch(query), 300),
-  []
-);
-`;
+    // Performance optimization techniques:
+    // 1. Code splitting with React.lazy
+    // 2. Component memoization with React.memo
+    // 3. Virtual scrolling for long lists
+    // 4. Image optimization
+    // 5. Debouncing search inputs
 
     await this.logger.info('Performance optimization completed', { metrics }, this.agentId);
 
@@ -413,30 +367,10 @@ const debouncedSearch = useMemo(
       'Skip to main content link',
     ];
 
-    const a11yCode = `
-// Accessibility utilities
-export const A11yAnnouncer: React.FC<{ message: string }> = ({ message }) => (
-  <div
-    role="status"
-    aria-live="polite"
-    aria-atomic="true"
-    className="sr-only"
-  >
-    {message}
-  </div>
-);
-
-// Keyboard navigation hook
-export const useKeyboardNav = (onEnter: () => void) => {
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') onEnter();
-    };
-    window.addEventListener('keypress', handleKeyPress);
-    return () => window.removeEventListener('keypress', handleKeyPress);
-  }, [onEnter]);
-};
-`;
+    // Accessibility utilities would include:
+    // - A11yAnnouncer component for screen readers
+    // - useKeyboardNav hook for keyboard navigation
+    // - Focus management utilities
 
     return a11yFeatures;
   }

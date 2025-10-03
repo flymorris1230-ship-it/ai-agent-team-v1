@@ -28,7 +28,7 @@ describe('PostgreSQL Proxy Connection Tests', () => {
     const proxyUrl = `http://${TEST_CONFIG.host}:8000`;
 
     const response = await fetch(`${proxyUrl}/health`);
-    const data = await response.json();
+    const data = await response.json() as { status: string };
 
     expect(response.ok).toBe(true);
     expect(data.status).toBe('healthy');
@@ -43,7 +43,7 @@ describe('PostgreSQL Proxy Connection Tests', () => {
       }
     });
 
-    const data = await response.json();
+    const data = await response.json() as { enabled: boolean };
 
     expect(response.ok).toBe(true);
     expect(data.enabled).toBe(true);
@@ -161,8 +161,8 @@ describe('PostgreSQL Proxy Connection Tests', () => {
 describe('Unified Database Integration Tests', () => {
   const mockEnv = {
     DB: {
-      prepare: (sql: string) => ({
-        bind: (...args: any[]) => ({
+      prepare: (_sql: string) => ({
+        bind: (..._args: any[]) => ({
           all: async () => ({ results: [], success: true }),
           first: async () => null,
           run: async () => ({ success: true })

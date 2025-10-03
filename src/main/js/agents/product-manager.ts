@@ -12,7 +12,7 @@ export class ProductManagerAgent {
   private knowledgeBase: KnowledgeBase;
   private agentId: AgentId = 'agent-pm';
 
-  constructor(private env: Env) {
+  constructor(env: Env) {
     this.logger = new Logger(env, 'ProductManagerAgent');
     this.knowledgeBase = new KnowledgeBase(env);
   }

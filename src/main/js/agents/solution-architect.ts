@@ -12,7 +12,7 @@ export class SolutionArchitectAgent {
   private knowledgeBase: KnowledgeBase;
   private agentId: AgentId = 'agent-architect';
 
-  constructor(private env: Env) {
+  constructor(env: Env) {
     this.logger = new Logger(env, 'SolutionArchitectAgent');
     this.knowledgeBase = new KnowledgeBase(env);
   }
@@ -88,7 +88,7 @@ export class SolutionArchitectAgent {
   /**
    * Analyze technical requirements from PRD
    */
-  private async analyzeTechnicalRequirements(prdContent: string): Promise<{
+  private async analyzeTechnicalRequirements(_prdContent: string): Promise<{
     scalability_needs: string;
     performance_targets: Record<string, string>;
     security_requirements: string[];
@@ -317,7 +317,7 @@ ${input.technicalReqs.integration_points.map((point) => `- ${point}`).join('\n')
   /**
    * Design API endpoints
    */
-  private designAPI(technicalReqs: {
+  private designAPI(_technicalReqs: {
     security_requirements: string[];
     integration_points: string[];
   }): Record<string, unknown> {
@@ -377,7 +377,7 @@ ${input.technicalReqs.integration_points.map((point) => `- ${point}`).join('\n')
   /**
    * Design data model
    */
-  private designDataModel(technicalReqs: { recommended_stack: string[] }): Record<string, unknown> {
+  private designDataModel(_technicalReqs: { recommended_stack: string[] }): Record<string, unknown> {
     return {
       database: 'D1 (SQLite)',
       tables: {

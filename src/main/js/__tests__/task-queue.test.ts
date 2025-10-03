@@ -8,8 +8,8 @@ import type { Env } from '../types';
 // Mock environment for testing
 const createMockEnv = (): Env => {
   const mockDB = {
-    prepare: (query: string) => ({
-      bind: (...args: unknown[]) => ({
+    prepare: (_query: string) => ({
+      bind: (..._args: unknown[]) => ({
         run: async () => ({ success: true }),
         first: async () => null,
         all: async () => ({ results: [] }),
@@ -24,6 +24,8 @@ const createMockEnv = (): Env => {
     CACHE: {} as any,
     TASK_QUEUE: {} as any,
     BACKUP_QUEUE: {} as any,
+    OPENAI_API_KEY: 'test-key',
+    JWT_SECRET: 'test-secret',
     ENVIRONMENT: 'test',
     LOG_LEVEL: 'info',
   };

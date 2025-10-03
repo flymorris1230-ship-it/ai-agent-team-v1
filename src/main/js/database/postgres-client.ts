@@ -66,7 +66,7 @@ export class PostgresClient {
         throw new Error(`PostgreSQL proxy error: ${response.status} - ${error}`);
       }
 
-      const result = await response.json();
+      const result = await response.json() as { rows?: T[]; rowCount?: number };
       return {
         rows: result.rows || [],
         rowCount: result.rowCount || 0
@@ -108,7 +108,7 @@ export class PostgresClient {
         throw new Error(`Vector search error: ${response.status} - ${error}`);
       }
 
-      const result = await response.json();
+      const result = await response.json() as { rows?: (T & { similarity: number })[]; rowCount?: number };
       return {
         rows: result.rows || [],
         rowCount: result.rowCount || 0
