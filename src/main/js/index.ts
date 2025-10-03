@@ -48,12 +48,25 @@ export default {
     const logger = new Logger(env, 'ScheduledHandler');
     await logger.info(`Running scheduled event at ${new Date(event.scheduledTime).toISOString()}`);
 
-    // Distribute pending tasks
-    const coordinator = new CoordinatorAgent(env);
-    await coordinator.distributeTasks();
+    // Determine cron type based on schedule
+    const cronType = event.cron || 'default';
 
-    // Monitor progress
-    const report = await coordinator.monitorProgress();
-    await logger.info('Scheduled progress report', { report });
+    if (cronType.includes('*/5') || cronType === 'default') {
+      // Every 5 minutes: Database sync
+      const { handleScheduledSync } = await import('./core/database-sync');
+      const syncResult = await handleScheduledSync(env);
+      await logger.info('Database sync completed', { syncResult });
+    } else if (cronType.includes('*/30')) {
+      // Every 30 minutes: Task distribution
+      const coordinator = new CoordinatorAgent(env);
+      await coordinator.distributeTasks();
+
+      const report = await coordinator.monitorProgress();
+      await logger.info('Task distribution completed', { report });
+    } else if (cronType.includes('0 2')) {
+      // Daily at 2 AM: Full backup
+      await logger.info('Starting daily backup');
+      // Backup logic here
+    }
   },
 };

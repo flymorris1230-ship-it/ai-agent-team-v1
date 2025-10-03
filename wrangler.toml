@@ -67,12 +67,13 @@ id = "ac78ef75b22f417d806008d1c948d33e"
 # ==========================================
 # Note: Cron triggers require Workers Paid plan
 # Uncomment when upgraded:
-# [triggers]
-# crons = [
-#   "0 2 * * *",    # Daily full backup at 2 AM
-#   "0 */6 * * *",  # R2 sync every 6 hours
-#   "0 * * * *"     # Hourly incremental backup
-# ]
+[triggers]
+crons = [
+  "*/5 * * * *",   # Database sync every 5 minutes
+  "*/30 * * * *",  # Task distribution every 30 minutes
+  "0 2 * * *",     # Daily full backup at 2 AM
+  "0 */6 * * *",   # R2 sync every 6 hours
+]
 
 # ==========================================
 # Build Configuration
