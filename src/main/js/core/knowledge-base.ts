@@ -5,215 +5,21 @@
 
 import type { Env, Document, DocumentChunk, KnowledgeEntry, KnowledgeEntryType, AgentId } from '../types';
 import { Logger } from '../utils/logger';
+import { RAGEngine } from './rag-engine';
 
-export class KnowledgeBaseManager {
+export class KnowledgeBase {
   private logger: Logger;
+  private ragEngine: RAGEngine;
 
   constructor(private env: Env) {
-    this.logger = new Logger(env, 'KnowledgeBaseManager');
-  }
-
-  /**
-   * Ingest a document into the knowledge base
-   */
-  async ingestDocument(documentData: {
-    title: string;
-    content: string;
-    content_type?: string;
-    source?: string;
-    source_url?: string;
-    category?: string;
-    tags?: string[];
-    user_id?: string;
-    agent_id?: AgentId;
-    metadata?: Record<string, unknown>;
-  }): Promise<Document> {
-    const document: Document = {
-      id: `doc-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
-      title: documentData.title,
-      content: documentData.content,
-      content_type: documentData.content_type || 'text',
-      source: documentData.source || 'upload',
-      source_url: documentData.source_url,
-      category: documentData.category,
-      tags: documentData.tags,
-      user_id: documentData.user_id,
-      agent_id: documentData.agent_id,
-      metadata: documentData.metadata,
-      created_at: Date.now(),
-      updated_at: Date.now(),
-    };
-
-    // Store document in database
-    await this.env.DB.prepare(
-      `INSERT INTO documents (id, title, content, content_type, source, source_url, category, tags, user_id, agent_id, metadata, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-      .bind(
-        document.id,
-        document.title,
-        document.content,
-        document.content_type || null,
-        document.source || null,
-        document.source_url || null,
-        document.category || null,
-        document.tags ? JSON.stringify(document.tags) : null,
-        document.user_id || null,
-        document.agent_id || null,
-        document.metadata ? JSON.stringify(document.metadata) : null,
-        document.created_at,
-        document.updated_at
-      )
-      .run();
-
-    // Chunk and vectorize the document
-    await this.chunkAndVectorize(document);
-
-    await this.logger.info(`Document ingested: ${document.id}`, { documentId: document.id }, document.agent_id);
-
-    return document;
-  }
-
-  /**
-   * Chunk document and create vector embeddings
-   */
-  private async chunkAndVectorize(document: Document): Promise<void> {
-    const chunks = this.chunkText(document.content);
-
-    for (let i = 0; i < chunks.length; i++) {
-      const chunkId = `chunk-${document.id}-${i}`;
-
-      // Create embedding using Vectorize (simplified - actual implementation would use AI model)
-      const vectorId = await this.createEmbedding(chunks[i], {
-        document_id: document.id,
-        chunk_index: i,
-        title: document.title,
-        category: document.category,
-      });
-
-      // Store chunk in database
-      const chunk: DocumentChunk = {
-        id: chunkId,
-        document_id: document.id,
-        chunk_index: i,
-        content: chunks[i],
-        vector_id: vectorId,
-        metadata: {
-          document_title: document.title,
-          category: document.category,
-        },
-        created_at: Date.now(),
-      };
-
-      await this.env.DB.prepare(
-        `INSERT INTO document_chunks (id, document_id, chunk_index, content, vector_id, metadata, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`
-      )
-        .bind(
-          chunk.id,
-          chunk.document_id,
-          chunk.chunk_index,
-          chunk.content,
-          chunk.vector_id || null,
-          chunk.metadata ? JSON.stringify(chunk.metadata) : null,
-          chunk.created_at
-        )
-        .run();
-    }
-
-    // Update document with indexed timestamp
-    await this.env.DB.prepare('UPDATE documents SET indexed_at = ? WHERE id = ?').bind(Date.now(), document.id).run();
-
-    await this.logger.info(`Document chunked and vectorized: ${document.id}`, { chunks: chunks.length });
-  }
-
-  /**
-   * Chunk text into smaller pieces for RAG
-   */
-  private chunkText(text: string, chunkSize = 1000, overlap = 200): string[] {
-    const chunks: string[] = [];
-    let position = 0;
-
-    while (position < text.length) {
-      const chunk = text.slice(position, position + chunkSize);
-      chunks.push(chunk);
-      position += chunkSize - overlap;
-    }
-
-    return chunks;
-  }
-
-  /**
-   * Create vector embedding (placeholder - would use actual embedding model)
-   */
-  private async createEmbedding(text: string, metadata: Record<string, unknown>): Promise<string> {
-    const vectorId = `vec-${crypto.randomUUID()}`;
-
-    // In production, this would:
-    // 1. Call an embedding model (OpenAI, Cohere, etc.)
-    // 2. Get the vector representation
-    // 3. Insert into Vectorize index
-    // For now, we'll create a placeholder
-
-    try {
-      // Simplified: Create a mock vector (in production, use actual embedding model)
-      const mockVector = Array(1536).fill(0).map(() => Math.random());
-
-      // Insert into Vectorize
-      await this.env.VECTORIZE.insert([
-        {
-          id: vectorId,
-          values: mockVector,
-          metadata: {
-            text,
-            ...metadata,
-          },
-        },
-      ]);
-    } catch (error) {
-      await this.logger.error('Failed to create embedding', { error, text: text.slice(0, 100) });
-    }
-
-    return vectorId;
-  }
-
-  /**
-   * Search knowledge base using semantic search
-   */
-  async search(query: string, options?: { top_k?: number; filter?: Record<string, unknown> }): Promise<
-    Array<{
-      document_id: string;
-      chunk_id: string;
-      content: string;
-      score: number;
-      metadata?: Record<string, unknown>;
-    }>
-  > {
-    const topK = options?.top_k || 5;
-
-    // Create query embedding
-    const queryVectorId = await this.createEmbedding(query, { type: 'query' });
-
-    // Query Vectorize for similar chunks
-    const results = await this.env.VECTORIZE.query(queryVectorId as unknown as number[], {
-      topK,
-      returnMetadata: true,
-    });
-
-    // Map results to response format
-    return results.matches.map((match: { id: string; score: number; metadata?: Record<string, unknown> }) => ({
-      document_id: match.metadata?.document_id as string,
-      chunk_id: match.id,
-      content: match.metadata?.text as string,
-      score: match.score,
-      metadata: match.metadata,
-    }));
+    this.logger = new Logger(env, 'KnowledgeBase');
+    this.ragEngine = new RAGEngine(env);
   }
 
   /**
    * Create a knowledge entry (PRD, decision, best practice, etc.)
    */
-  async createKnowledgeEntry(entryData: {
+  async createEntry(entryData: {
     type: KnowledgeEntryType;
     title: string;
     content: string;
@@ -235,11 +41,22 @@ export class KnowledgeBaseManager {
       updated_at: Date.now(),
     };
 
-    // Create vector embedding
-    const vectorId = await this.createEmbedding(`${entry.title}\n\n${entry.content}`, {
-      type: entry.type,
-      title: entry.title,
-    });
+    // Create vector embedding using RAG engine
+    const embedding = await this.ragEngine.createEmbedding(`${entry.title}\n\n${entry.content}`);
+    const vectorId = `vec-${entry.id}`;
+
+    // Insert vector into Vectorize
+    await this.env.VECTORIZE.insert([
+      {
+        id: vectorId,
+        values: embedding,
+        metadata: {
+          type: entry.type,
+          title: entry.title,
+          text: `${entry.title}\n\n${entry.content}`,
+        },
+      },
+    ]);
 
     entry.vector_id = vectorId;
 
@@ -269,21 +86,83 @@ export class KnowledgeBaseManager {
   }
 
   /**
-   * Get document by ID
+   * Search knowledge base using semantic search
    */
-  async getDocument(documentId: string): Promise<Document | null> {
-    const result = await this.env.DB.prepare('SELECT * FROM documents WHERE id = ?').bind(documentId).first();
+  async search(
+    query: string,
+    options?: {
+      top_k?: number;
+      type?: KnowledgeEntryType;
+      related_tasks?: string[];
+      limit?: number;
+    }
+  ): Promise<KnowledgeEntry[]> {
+    const topK = options?.top_k || options?.limit || 5;
 
-    if (!result) return null;
+    // Create query embedding using RAG engine
+    const queryEmbedding = await this.ragEngine.createEmbedding(query);
 
-    return this.deserializeDocument(result);
+    // Query Vectorize for similar entries
+    const results = await this.env.VECTORIZE.query(queryEmbedding, {
+      topK: topK * 2, // Get more to allow for filtering
+      returnMetadata: true,
+    });
+
+    // Get full knowledge entries from database
+    const entries: KnowledgeEntry[] = [];
+
+    for (const match of results.matches) {
+      // Apply type filter if specified
+      if (options?.type && match.metadata?.type !== options.type) {
+        continue;
+      }
+
+      // Try to get from knowledge_entries table
+      const entry = await this.env.DB.prepare('SELECT * FROM knowledge_entries WHERE vector_id = ?')
+        .bind(match.id)
+        .first();
+
+      if (entry) {
+        const deserializedEntry = this.deserializeKnowledgeEntry(entry);
+
+        // Apply related_tasks filter if specified
+        if (options?.related_tasks) {
+          const hasMatchingTask = options.related_tasks.some((task) =>
+            deserializedEntry.related_tasks?.includes(task)
+          );
+          if (!hasMatchingTask) continue;
+        }
+
+        entries.push(deserializedEntry);
+
+        // Stop when we have enough entries
+        if (entries.length >= topK) break;
+      }
+    }
+
+    return entries;
   }
 
   /**
-   * Search knowledge entries by type
+   * Get knowledge entry by ID
    */
-  async getKnowledgeEntriesByType(type: KnowledgeEntryType, limit = 50): Promise<KnowledgeEntry[]> {
-    const result = await this.env.DB.prepare('SELECT * FROM knowledge_entries WHERE type = ? ORDER BY created_at DESC LIMIT ?')
+  async getEntry(entryId: string): Promise<KnowledgeEntry | null> {
+    const result = await this.env.DB.prepare('SELECT * FROM knowledge_entries WHERE id = ?')
+      .bind(entryId)
+      .first();
+
+    if (!result) return null;
+
+    return this.deserializeKnowledgeEntry(result);
+  }
+
+  /**
+   * Get knowledge entries by type
+   */
+  async getEntriesByType(type: KnowledgeEntryType, limit = 50): Promise<KnowledgeEntry[]> {
+    const result = await this.env.DB.prepare(
+      'SELECT * FROM knowledge_entries WHERE type = ? ORDER BY created_at DESC LIMIT ?'
+    )
       .bind(type, limit)
       .all();
 
@@ -291,14 +170,91 @@ export class KnowledgeBaseManager {
   }
 
   /**
-   * Deserialize document from database row
+   * Update knowledge entry
    */
-  private deserializeDocument(row: Record<string, unknown>): Document {
-    return {
-      ...row,
-      tags: row.tags ? JSON.parse(row.tags as string) : undefined,
-      metadata: row.metadata ? JSON.parse(row.metadata as string) : undefined,
-    } as Document;
+  async updateEntry(
+    entryId: string,
+    updates: {
+      title?: string;
+      content?: string;
+      tags?: string[];
+      metadata?: Record<string, unknown>;
+    }
+  ): Promise<KnowledgeEntry | null> {
+    const entry = await this.getEntry(entryId);
+    if (!entry) return null;
+
+    const updatedEntry = {
+      ...entry,
+      ...updates,
+      updated_at: Date.now(),
+    };
+
+    // If content changed, update vector
+    if (updates.title || updates.content) {
+      const text = `${updatedEntry.title}\n\n${updatedEntry.content}`;
+      const embedding = await this.ragEngine.createEmbedding(text);
+
+      // Delete old vector
+      if (entry.vector_id) {
+        await this.env.VECTORIZE.deleteByIds([entry.vector_id]);
+      }
+
+      // Insert new vector
+      const vectorId = `vec-${entryId}`;
+      await this.env.VECTORIZE.insert([
+        {
+          id: vectorId,
+          values: embedding,
+          metadata: {
+            type: updatedEntry.type,
+            title: updatedEntry.title,
+            text,
+          },
+        },
+      ]);
+
+      updatedEntry.vector_id = vectorId;
+    }
+
+    // Update database
+    await this.env.DB.prepare(
+      `UPDATE knowledge_entries
+       SET title = ?, content = ?, tags = ?, metadata = ?, vector_id = ?, updated_at = ?
+       WHERE id = ?`
+    )
+      .bind(
+        updatedEntry.title,
+        updatedEntry.content,
+        updatedEntry.tags ? JSON.stringify(updatedEntry.tags) : null,
+        updatedEntry.metadata ? JSON.stringify(updatedEntry.metadata) : null,
+        updatedEntry.vector_id || null,
+        updatedEntry.updated_at,
+        entryId
+      )
+      .run();
+
+    return updatedEntry;
+  }
+
+  /**
+   * Delete knowledge entry
+   */
+  async deleteEntry(entryId: string): Promise<boolean> {
+    const entry = await this.getEntry(entryId);
+    if (!entry) return false;
+
+    // Delete vector
+    if (entry.vector_id) {
+      await this.env.VECTORIZE.deleteByIds([entry.vector_id]);
+    }
+
+    // Delete from database
+    await this.env.DB.prepare('DELETE FROM knowledge_entries WHERE id = ?').bind(entryId).run();
+
+    await this.logger.info(`Knowledge entry deleted: ${entryId}`);
+
+    return true;
   }
 
   /**

@@ -12,6 +12,9 @@ export interface Env {
   CACHE: KVNamespace;
   TASK_QUEUE: Queue;
   BACKUP_QUEUE: Queue;
+  OPENAI_API_KEY: string;
+  JWT_SECRET: string;
+  NAS_WEBHOOK_URL?: string;
   ENVIRONMENT: string;
   LOG_LEVEL: string;
 }
