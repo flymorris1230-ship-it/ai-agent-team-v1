@@ -1,21 +1,85 @@
 # ai-agent-team-v1
 
-**Cloudflare + NAS + RAG + MCP 企業級 AI Agent 團隊系統**
+**Cloudflare + NAS + RAG + Multi-LLM 企業級 AI Agent 團隊系統**
+
+> **Version**: v2.2 (Hybrid + Multi-LLM + Cloudflare Paid Features)
+> **Cost**: $5-50/month (視使用量)
+> **Last Updated**: 2025-10-04
 
 ## 📋 專案概述
 
 這是一個基於 Cloudflare Workers 的企業級 AI Agent 協作系統，整合了：
 - ✅ **多 Agent 協作框架**：9 個專業 AI Agent 協同工作
-- ✅ **RAG 系統**：使用 Vectorize 實現語義檢索
+- ✅ **RAG 系統**：語義檢索 + PostgreSQL pgvector
+- ✅ **Multi-LLM 智能路由**：OpenAI + Gemini 自動選擇最佳/最便宜 LLM
 - ✅ **MCP 協議整合**：支援外部數據爬取和整合
-- ✅ **NAS 備份**：完整的災難恢復策略
+- ✅ **雙向備份**：Cloudflare ↔ NAS 災難恢復
 - ✅ **企業級安全**：加密、認證、審計
+- ✅ **自動化運維**：Cron Triggers + Queues + R2 Storage
+
+## 🎯 核心特性 (v2.2)
+
+### 💰 **智能成本優化**
+- **Multi-LLM Router**: 自動選擇 OpenAI/Gemini，節省 50%-100% LLM 成本
+- **Gemini 免費額度**: Embeddings 完全免費，Chat 實驗版免費
+- **智能路由策略**: cost/performance/balanced 三種模式
+- **成本追蹤**: 自動計算每次請求成本
+
+### 🚀 **Cloudflare 付費功能**
+- **Cron Triggers**: 自動化定時任務 (數據同步/備份)
+- **R2 Storage**: 全球 CDN + 免費出站流量
+- **Queues**: 異步任務處理，提升性能
+- **Workers Paid**: $5/月基礎訂閱，企業級 SLA
+
+### 🧪 **完整測試框架**
+- **26+ 測試用例**: LLM Router + RAG Multi-LLM 集成測試
+- **多策略驗證**: cost/performance/balanced 策略測試
+- **Failover 測試**: 自動容錯機制驗證
+- **成本比較**: 實際成本節省效果演示
 
 ## 🎯 快速開始
 
-1. **閱讀 CLAUDE.md** - 包含所有開發規則和指南
-2. **查看 ai_agent_team_config.txt** - 完整的 Agent 團隊配置
-3. **遵循開發規範** - 使用 src/main/ 目錄結構
+### 方式一：使用輔助腳本 (推薦)
+
+```bash
+# 1. 部署前檢查
+./scripts/pre-deployment-check.sh
+
+# 2. 快速部署
+./scripts/quick-deploy.sh production
+
+# 3. 監控成本
+./scripts/monitor-costs.sh
+```
+
+### 方式二：手動步驟
+
+1. **閱讀文檔**
+   - [CLAUDE.md](./CLAUDE.md) - 開發規則和指南
+   - [PROJECT-CONTINUATION.md](./PROJECT-CONTINUATION.md) - 專案當前狀態
+   - [COST-ANALYSIS.md](./COST-ANALYSIS.md) - 成本分析
+
+2. **環境配置**
+   ```bash
+   cp .env.example .env
+   # 編輯 .env 填入 API Keys
+   ```
+
+3. **部署**
+   ```bash
+   npm run typecheck
+   npm run deploy
+   ```
+
+### 繼續執行專案 (新 Session)
+
+```bash
+# 1. 初始化 session (自動拉取最新狀態)
+./.claude-session-init.sh
+
+# 2. 在 Claude Code 中輸入
+繼續執行專案
+```
 
 ## 🏗️ 專案結構
 
@@ -92,29 +156,34 @@ ai-agent-team-v1/
 
 ## 🛠️ 技術棧
 
-### Cloudflare 平台
-- **Workers** - 無服務器運算
-- **D1** - SQLite 數據庫
-- **Vectorize** - 向量數據庫
-- **R2** - 對象存儲
-- **KV** - 鍵值存儲
-- **Queues** - 消息隊列
+### Cloudflare 平台 (Workers Paid Plan - $5/月)
+- **Workers** - 無服務器運算 (無限請求)
+- **D1** - SQLite 數據庫 (5GB 免費)
+- **Vectorize** - 向量數據庫 (可選，推薦用 NAS pgvector)
+- **R2** ✅ - 對象存儲 (10GB 免費 + 免費出站流量)
+- **KV** - 鍵值存儲 (1GB 免費)
+- **Queues** ✅ - 消息隊列 (100萬操作/月免費)
+- **Cron Triggers** ✅ - 定時任務 (無額外費用)
+
+### AI/ML (Multi-LLM 智能路由)
+- **OpenAI API** - GPT-4o-mini, text-embedding-3-small
+- **Google Gemini** - Gemini 2.0 Flash (免費), text-embedding-004 (免費)
+- **LLM Router** - 自動選擇最佳 Provider (cost/performance/balanced)
+- **RAG Engine** - Retrieval-Augmented Generation
+- **PostgreSQL pgvector** - 向量存儲 (NAS 免費)
 
 ### 開發框架
 - **TypeScript** - 主要開發語言
-- **Hono.js / itty-router** - 路由框架
-- **React / SvelteKit** - 前端框架
-- **TailwindCSS** - UI 樣式
+- **Hono.js** - 輕量級路由框架
+- **Vitest** - 測試框架 (26+ 測試用例)
+- **React / SvelteKit** - 前端框架 (未來)
+- **TailwindCSS** - UI 樣式 (未來)
 
-### AI/ML
-- **RAG (Retrieval-Augmented Generation)** - 檢索增強生成
-- **OpenAI API** - LLM 服務
-- **MCP Protocol** - 模型上下文協議
-
-### 備份與運維
-- **NAS** - 本地備份
-- **rclone** - R2 ↔ NAS 同步
-- **Wrangler** - Cloudflare CLI
+### 基礎設施 (混合架構)
+- **Cloudflare Workers** - Edge 計算 + API
+- **NAS PostgreSQL** - 主要數據存儲 + 向量搜尋
+- **雙向同步** - Cloudflare ↔ NAS 自動備份
+- **Wrangler** - Cloudflare CLI 工具
 
 ## 📦 安裝與設置
 
@@ -140,15 +209,38 @@ vim .env
 ```
 
 ### 初始化資源
+
+#### 1. Cloudflare Dashboard 操作 (Workers Paid 必須)
+
+```
+1. 升級 Workers Paid Plan ($5/月)
+   https://dash.cloudflare.com/[account-id]/workers/plans
+
+2. 創建 R2 Bucket
+   Dashboard → R2 → Create bucket
+   名稱: ai-agent-files
+
+3. 創建 Queues (2 個)
+   Dashboard → Queues → Create
+   - ai-agent-tasks (max_batch_size: 10)
+   - ai-agent-backup (max_batch_size: 5)
+
+4. 設定預算警報
+   Dashboard → Billing → Budget alerts
+   建議上限: $20-50/月
+```
+
+#### 2. CLI 創建資源
+
 ```bash
 # 創建 D1 數據庫
 wrangler d1 create ai-agent-db
 
-# 創建 Vectorize 索引
+# 創建 Vectorize 索引 (可選，推薦用 NAS pgvector)
 wrangler vectorize create ai-agent-vectors --dimensions=1536 --metric=cosine
 
-# 創建 R2 存儲桶
-wrangler r2 bucket create ai-agent-files
+# 驗證 R2 bucket (已在 Dashboard 創建)
+npx wrangler r2 bucket list
 ```
 
 ## 🚀 開發指南
@@ -182,11 +274,21 @@ wrangler r2 bucket create ai-agent-files
 
 ## 📚 文檔
 
-- **[AI Agent 配置](./ai_agent_team_config.txt)** - 完整的 Agent 團隊配置
-- **[開發規則](./CLAUDE.md)** - Claude Code 開發指南
-- **[API 文檔](./docs/api/)** - API 參考文檔
-- **[用戶指南](./docs/user/)** - 使用說明
-- **[開發者文檔](./docs/dev/)** - 架構和設計文檔
+### 核心文檔
+- **[PROJECT-CONTINUATION.md](./PROJECT-CONTINUATION.md)** - 專案當前狀態與待辦事項
+- **[CLAUDE.md](./CLAUDE.md)** - Claude Code 開發規則與指南
+- **[COST-ANALYSIS.md](./COST-ANALYSIS.md)** - 完整成本分析 ($0-50/月)
+
+### 功能指南
+- **[Multi-LLM Guide](./docs/multi-llm-guide.md)** - Multi-LLM 智能路由使用指南
+- **[Cloudflare Paid Deployment](./docs/cloudflare-paid-deployment.md)** - 付費功能部署指南
+- **[Session Setup](./SESSION-SETUP.md)** - Session 初始化設置
+
+### 配置與腳本
+- **[AI Agent 配置](./ai_agent_team_config.txt)** - Agent 團隊配置
+- **[pre-deployment-check.sh](./scripts/pre-deployment-check.sh)** - 部署前檢查
+- **[monitor-costs.sh](./scripts/monitor-costs.sh)** - 成本監控
+- **[quick-deploy.sh](./scripts/quick-deploy.sh)** - 快速部署
 
 ## 🔒 安全
 
@@ -205,6 +307,32 @@ wrangler r2 bucket create ai-agent-files
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 開啟 Pull Request
 
+## 💰 成本預估
+
+### 三種方案比較
+
+| 方案 | 月成本 | 適用場景 | 主要特點 |
+|------|--------|---------|---------|
+| 🆓 **免費** | $0-5 | 個人開發 | NAS cron + 免費 LLM |
+| ⭐ **混合** (推薦) | $10-20 | 小型團隊 | Cloudflare Paid + NAS + 智能路由 |
+| 🚀 **企業級** | $20-50 | 中大型企業 | 完整付費功能 + 高性能 |
+
+### 成本構成 (混合方案)
+
+```
+Workers Paid:          $5/月 (基礎)
+R2 Storage:            $0-3/月 (depends on usage)
+Queues:                $0-2/月 (depends on usage)
+LLM API (balanced):    $2-8/月 (50%-100% 節省)
+NAS 電費:               $3-5/月
+──────────────────────────
+總計:                  $10-20/月
+```
+
+**vs 傳統方案**: 節省 50%-70% 成本
+
+詳見 [COST-ANALYSIS.md](./COST-ANALYSIS.md)
+
 ## 📄 許可證
 
 MIT License - 詳見 [LICENSE](LICENSE) 文件
@@ -213,8 +341,20 @@ MIT License - 詳見 [LICENSE](LICENSE) 文件
 
 - **Template by**: Chang Ho Chien | HC AI 說人話channel
 - **Tutorial**: https://youtu.be/8Q1bRZaHH24
-- **Powered by**: Cloudflare Workers, Claude AI, MCP Protocol
+- **Powered by**: Cloudflare Workers, Claude AI, OpenAI, Google Gemini
+
+## 📊 專案狀態
+
+- **版本**: v2.2 (Hybrid + Multi-LLM + Cloudflare Paid)
+- **最後更新**: 2025-10-04
+- **開發階段**: ✅ 核心功能完成，進入部署階段
+- **測試覆蓋**: 26+ 測試用例
+- **成本範圍**: $5-50/月 (視使用量)
 
 ---
 
-**🎯 Ready to build the future of AI Agent collaboration!**
+**🎯 Ready to build the future of AI Agent collaboration with intelligent cost optimization!**
+
+**🚀 Quick Start**: `./scripts/quick-deploy.sh`
+**💰 Cost Monitor**: `./scripts/monitor-costs.sh`
+**📖 Full Guide**: [PROJECT-CONTINUATION.md](./PROJECT-CONTINUATION.md)
