@@ -65,15 +65,17 @@ id = "ac78ef75b22f417d806008d1c948d33e"
 # ==========================================
 # Cron Triggers (for scheduled tasks)
 # ==========================================
-# Note: Cron triggers require Workers Paid plan
-# Uncomment when upgraded:
-[triggers]
-crons = [
-  "*/5 * * * *",   # Database sync every 5 minutes
-  "*/30 * * * *",  # Task distribution every 30 minutes
-  "0 2 * * *",     # Daily full backup at 2 AM
-  "0 */6 * * *",   # R2 sync every 6 hours
-]
+# Note: Cron triggers require Workers Paid plan ($5/month)
+# DISABLED - Using NAS cron jobs instead for free alternative
+# To enable: Uncomment below and upgrade to Workers Paid plan
+#
+# [triggers]
+# crons = [
+#   "*/5 * * * *",   # Database sync every 5 minutes
+#   "*/30 * * * *",  # Task distribution every 30 minutes
+#   "0 2 * * *",     # Daily full backup at 2 AM
+#   "0 */6 * * * ",  # R2 sync every 6 hours
+# ]
 
 # ==========================================
 # Build Configuration
