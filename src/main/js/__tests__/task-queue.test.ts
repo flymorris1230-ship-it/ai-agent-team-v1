@@ -25,6 +25,7 @@ const createMockEnv = (): Env => {
     TASK_QUEUE: {} as any,
     BACKUP_QUEUE: {} as any,
     OPENAI_API_KEY: 'test-key',
+    GEMINI_API_KEY: 'test-gemini-key',
     JWT_SECRET: 'test-secret',
     ENVIRONMENT: 'test',
     LOG_LEVEL: 'info',

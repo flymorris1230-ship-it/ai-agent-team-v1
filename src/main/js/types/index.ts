@@ -12,9 +12,21 @@ export interface Env {
   CACHE: KVNamespace;
   TASK_QUEUE: Queue;
   BACKUP_QUEUE: Queue;
+
+  // LLM API Keys
   OPENAI_API_KEY: string;
+  GEMINI_API_KEY: string;
+
+  // LLM Router Configuration
+  LLM_STRATEGY?: string;           // 'cost' | 'performance' | 'balanced'
+  PREFERRED_PROVIDER?: string;     // 'openai' | 'gemini'
+  USE_LLM_ROUTER?: string;         // 'true' | 'false'
+
+  // Security
   JWT_SECRET: string;
   NAS_WEBHOOK_URL?: string;
+
+  // Environment
   ENVIRONMENT: string;
   LOG_LEVEL: string;
 }

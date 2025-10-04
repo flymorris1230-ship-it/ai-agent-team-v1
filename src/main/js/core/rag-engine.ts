@@ -2,11 +2,13 @@
  * RAG (Retrieval-Augmented Generation) Engine
  * Core engine for document retrieval and answer generation
  * Supports both Cloudflare Vectorize and PostgreSQL pgvector
+ * Multi-LLM support: OpenAI + Gemini with intelligent routing
  */
 
 import type { Env, RAGQuery, RAGResult, RetrievalSource, Message } from '../types';
 import { Logger } from '../utils/logger';
 import { createUnifiedDatabase, UnifiedDatabase } from '../database/unified-db';
+import { LLMRouter, OptimizationStrategy } from '../llm/router';
 
 export interface EmbeddingResponse {
   embedding: number[];
@@ -35,12 +37,17 @@ export interface RAGConfig {
   chunkOverlap: number;
   usePostgresVector: boolean; // Use PostgreSQL pgvector instead of Cloudflare Vectorize
   hybridSearch: boolean; // Use both Vectorize and pgvector, merge results
+  // Multi-LLM configuration
+  llmStrategy?: OptimizationStrategy; // 'cost' | 'performance' | 'balanced'
+  preferredProvider?: 'openai' | 'gemini';
+  useLLMRouter?: boolean; // Enable multi-LLM routing
 }
 
 export class RAGEngine {
   private logger: Logger;
   private db: UnifiedDatabase;
   private config: RAGConfig;
+  private llmRouter?: LLMRouter;
   // Legacy properties for backward compatibility
   private get embeddingModel() { return this.config.embeddingModel; }
   private get chatModel() { return this.config.chatModel; }
@@ -55,8 +62,29 @@ export class RAGEngine {
       chunkSize: config?.chunkSize || 1000,
       chunkOverlap: config?.chunkOverlap || 200,
       usePostgresVector: config?.usePostgresVector ?? false,
-      hybridSearch: config?.hybridSearch ?? false
+      hybridSearch: config?.hybridSearch ?? false,
+      llmStrategy: config?.llmStrategy || 'balanced',
+      preferredProvider: config?.preferredProvider,
+      useLLMRouter: config?.useLLMRouter ?? true, // Default: use intelligent routing
     };
+
+    // Initialize LLM Router if enabled
+    if (this.config.useLLMRouter && env.OPENAI_API_KEY && env.GEMINI_API_KEY) {
+      this.llmRouter = new LLMRouter(
+        env.OPENAI_API_KEY,
+        env.GEMINI_API_KEY,
+        {
+          strategy: this.config.llmStrategy,
+          preferredProvider: this.config.preferredProvider,
+          fallbackEnabled: true,
+          maxRetries: 2,
+        }
+      );
+      this.logger.info('LLM Router initialized', {
+        strategy: this.config.llmStrategy,
+        preferred: this.config.preferredProvider,
+      });
+    }
   }
 
   /**
@@ -285,10 +313,26 @@ Instructions:
   }
 
   /**
-   * Create embedding using OpenAI API
+   * Create embedding using LLM Router (OpenAI or Gemini)
    */
   async createEmbedding(text: string): Promise<number[]> {
     try {
+      // Use LLM Router if available
+      if (this.llmRouter) {
+        const response = await this.llmRouter.createEmbedding({
+          text,
+          model: this.embeddingModel,
+        });
+
+        await this.logger.info('Embedding created via LLM Router', {
+          model: response.model,
+          tokens: response.usage.total_tokens,
+        });
+
+        return response.embedding;
+      }
+
+      // Fallback to direct OpenAI API call
       const response = await fetch('https://api.openai.com/v1/embeddings', {
         method: 'POST',
         headers: {
@@ -321,12 +365,33 @@ Instructions:
   }
 
   /**
-   * Chat completion using OpenAI API
+   * Chat completion using LLM Router (OpenAI or Gemini)
    */
   private async chatCompletion(
     messages: Array<{ role: string; content: string }>
   ): Promise<ChatCompletionResponse> {
     try {
+      // Use LLM Router if available
+      if (this.llmRouter) {
+        const response = await this.llmRouter.createChatCompletion({
+          messages: messages.map((msg) => ({
+            role: msg.role as 'system' | 'user' | 'assistant',
+            content: msg.content,
+          })),
+          model: this.chatModel,
+          temperature: 0.7,
+          max_tokens: 1000,
+        });
+
+        await this.logger.info('Chat completion via LLM Router', {
+          model: response.model,
+          tokens: response.usage.total_tokens,
+        });
+
+        return response;
+      }
+
+      // Fallback to direct OpenAI API call
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
