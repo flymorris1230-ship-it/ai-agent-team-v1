@@ -15,6 +15,8 @@ export interface EmbeddingResponse {
     prompt_tokens: number;
     total_tokens: number;
   };
+  provider?: string;  // Added by LLM Router
+  cost?: number;      // Added by LLM Router (USD)
 }
 
 export interface ChatMessage {
@@ -39,6 +41,8 @@ export interface ChatResponse {
     total_tokens: number;
   };
   finish_reason: string;
+  provider?: string;  // Added by LLM Router
+  cost?: number;      // Added by LLM Router (USD)
 }
 
 export interface ProviderPricing {

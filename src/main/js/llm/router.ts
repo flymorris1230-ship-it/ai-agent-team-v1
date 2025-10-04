@@ -70,11 +70,17 @@ export class LLMRouter {
    */
   async createEmbedding(request: EmbeddingRequest): Promise<EmbeddingResponse> {
     const provider = this.selectProvider('embedding', request);
-    return await this.executeWithFallback(
+    const response = await this.executeWithFallback(
       provider,
       'embedding',
       async (p) => await p.createEmbedding(request)
     );
+
+    // Add provider metadata and cost information
+    response.provider = provider.name;
+    response.cost = provider.estimateCost(response.usage.total_tokens, 0, response.model);
+
+    return response;
   }
 
   /**
@@ -83,11 +89,21 @@ export class LLMRouter {
   async createChatCompletion(request: ChatRequest): Promise<ChatResponse> {
     const taskType: TaskType = 'chat';
     const provider = this.selectProvider(taskType, request);
-    return await this.executeWithFallback(
+    const response = await this.executeWithFallback(
       provider,
       taskType,
       async (p) => await p.createChatCompletion(request)
     );
+
+    // Add provider metadata and cost information
+    response.provider = provider.name;
+    response.cost = provider.estimateCost(
+      response.usage.prompt_tokens,
+      response.usage.completion_tokens,
+      response.model
+    );
+
+    return response;
   }
 
   /**
