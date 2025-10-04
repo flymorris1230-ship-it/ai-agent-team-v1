@@ -1,6 +1,7 @@
 name = "ai-agent-team"
 main = "src/main/js/index.ts"
 compatibility_date = "2024-01-01"
+account_id = "2fb92a078e2e1ae3f309523fcc76b173"
 
 # ==========================================
 # Custom Domain Configuration
@@ -28,9 +29,11 @@ database_id = "99db8f91-db78-451a-bdc8-75dd2cf3f25b"
 # ==========================================
 # Vectorize Bindings (for RAG)
 # ==========================================
-[[vectorize]]
-binding = "VECTORIZE"
-index_name = "ai-agent-vectors"
+# Note: Vectorize requires beta access - commented out for now
+# Uncomment when Vectorize is available in your account
+# [[vectorize]]
+# binding = "VECTORIZE"
+# index_name = "ai-agent-vectors"
 
 # ==========================================
 # R2 Storage Bindings
@@ -117,8 +120,24 @@ routes = [
 
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "ai-agent-db-prod"
-database_id = "your-prod-database-id-here"
+database_name = "ai-agent-db-prod-v1"
+database_id = "22076fb8-45e3-4b90-b6cb-98d5f23b369c"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE"
+id = "ac78ef75b22f417d806008d1c948d33e"
+
+[[env.production.r2_buckets]]
+binding = "STORAGE"
+bucket_name = "ai-agent-files"
+
+[[env.production.queues.producers]]
+binding = "TASK_QUEUE"
+queue = "ai-agent-tasks"
+
+[[env.production.queues.producers]]
+binding = "BACKUP_QUEUE"
+queue = "ai-agent-backup"
 
 # ==========================================
 # Staging Configuration (Optional)

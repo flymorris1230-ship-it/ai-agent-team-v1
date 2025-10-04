@@ -20,8 +20,8 @@ healthRoutes.get('/', async (c) => {
     const checks = {
       timestamp: startTime,
       status: 'healthy',
-      uptime: process?.uptime?.() || 0,
       environment: c.env.ENVIRONMENT || 'unknown',
+      worker: 'cloudflare-workers',
     };
 
     return c.json({

@@ -47,12 +47,13 @@ export const databaseConfig: DatabaseConfig = {
   },
 
   postgres: {
-    enabled: true,
-    host: process.env.POSTGRES_HOST || '192.168.1.114',
-    port: parseInt(process.env.POSTGRES_PORT || '5532'),
-    database: process.env.POSTGRES_DB || 'postgres',
-    user: process.env.POSTGRES_USER || 'postgres',
-    password: process.env.POSTGRES_PASSWORD || '',
+    // Disabled in Workers environment (NAS PostgreSQL not accessible from edge)
+    enabled: false,
+    host: typeof process !== 'undefined' ? (process.env.POSTGRES_HOST || '192.168.1.114') : '192.168.1.114',
+    port: typeof process !== 'undefined' ? parseInt(process.env.POSTGRES_PORT || '5532') : 5532,
+    database: typeof process !== 'undefined' ? (process.env.POSTGRES_DB || 'postgres') : 'postgres',
+    user: typeof process !== 'undefined' ? (process.env.POSTGRES_USER || 'postgres') : 'postgres',
+    password: typeof process !== 'undefined' ? (process.env.POSTGRES_PASSWORD || '') : '',
     useCases: [
       'documents',          // Knowledge base with pgvector
       'document_chunks',    // RAG chunks with embeddings
@@ -64,7 +65,8 @@ export const databaseConfig: DatabaseConfig = {
   },
 
   sync: {
-    enabled: true,
+    // Disabled when PostgreSQL is not available
+    enabled: false,
     direction: 'bidirectional',
     interval: 300, // 5 minutes
     tables: ['users', 'agents'] // Sync these tables between D1 and PostgreSQL
