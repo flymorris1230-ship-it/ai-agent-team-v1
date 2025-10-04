@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { RAGEngineV2 } from '../core/rag-engine-v2';
+import { RAGEngine } from '../core/rag-engine';
 
 const mockEnv = {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
@@ -29,11 +29,11 @@ const mockEnv = {
 };
 
 describe('RAG System Integration Tests', () => {
-  let ragEngine: RAGEngineV2;
+  let ragEngine: RAGEngine;
 
   beforeAll(() => {
     // Test with PostgreSQL pgvector only
-    ragEngine = new RAGEngineV2(mockEnv as any, {
+    ragEngine = new RAGEngine(mockEnv as any, {
       usePostgresVector: true,
       hybridSearch: false
     });
@@ -142,10 +142,10 @@ Implements API endpoints and database logic.
 });
 
 describe('RAG Performance Tests', () => {
-  let ragEngine: RAGEngineV2;
+  let ragEngine: RAGEngine;
 
   beforeAll(() => {
-    ragEngine = new RAGEngineV2(mockEnv as any, {
+    ragEngine = new RAGEngine(mockEnv as any, {
       usePostgresVector: true
     });
   });
@@ -198,11 +198,11 @@ describe('RAG Performance Tests', () => {
 });
 
 describe('Hybrid Search Tests', () => {
-  let hybridEngine: RAGEngineV2;
+  let hybridEngine: RAGEngine;
 
   beforeAll(() => {
     // Test with hybrid mode (Vectorize + pgvector)
-    hybridEngine = new RAGEngineV2(mockEnv as any, {
+    hybridEngine = new RAGEngine(mockEnv as any, {
       usePostgresVector: true,
       hybridSearch: true
     });

@@ -1,12 +1,12 @@
 /**
  * RAG (Retrieval-Augmented Generation) Engine
  * Core engine for document retrieval and answer generation
+ * Supports both Cloudflare Vectorize and PostgreSQL pgvector
  */
 
 import type { Env, RAGQuery, RAGResult, RetrievalSource, Message } from '../types';
 import { Logger } from '../utils/logger';
-// KnowledgeBaseManager import kept for backward compatibility
-// import { KnowledgeBaseManager } from './knowledge-base';
+import { createUnifiedDatabase, UnifiedDatabase } from '../database/unified-db';
 
 export interface EmbeddingResponse {
   embedding: number[];
@@ -28,13 +28,35 @@ export interface ChatCompletionResponse {
   finish_reason: string;
 }
 
+export interface RAGConfig {
+  embeddingModel: string;
+  chatModel: string;
+  chunkSize: number;
+  chunkOverlap: number;
+  usePostgresVector: boolean; // Use PostgreSQL pgvector instead of Cloudflare Vectorize
+  hybridSearch: boolean; // Use both Vectorize and pgvector, merge results
+}
+
 export class RAGEngine {
   private logger: Logger;
-  private embeddingModel = 'text-embedding-3-small';
-  private chatModel = 'gpt-4o-mini';
+  private db: UnifiedDatabase;
+  private config: RAGConfig;
+  // Legacy properties for backward compatibility
+  private get embeddingModel() { return this.config.embeddingModel; }
+  private get chatModel() { return this.config.chatModel; }
 
-  constructor(private env: Env) {
+  constructor(private env: Env, config?: Partial<RAGConfig>) {
     this.logger = new Logger(env, 'RAGEngine');
+    this.db = createUnifiedDatabase(env);
+
+    this.config = {
+      embeddingModel: config?.embeddingModel || 'text-embedding-3-small',
+      chatModel: config?.chatModel || 'gpt-4o-mini',
+      chunkSize: config?.chunkSize || 1000,
+      chunkOverlap: config?.chunkOverlap || 200,
+      usePostgresVector: config?.usePostgresVector ?? false,
+      hybridSearch: config?.hybridSearch ?? false
+    };
   }
 
   /**
@@ -75,6 +97,7 @@ export class RAGEngine {
 
   /**
    * Retrieve relevant documents using semantic search
+   * Supports Vectorize, PostgreSQL pgvector, or hybrid search
    */
   private async retrieve(ragQuery: RAGQuery): Promise<RetrievalSource[]> {
     const { query, top_k = 5, filter } = ragQuery;
@@ -84,13 +107,28 @@ export class RAGEngine {
     // Create query embedding
     const queryEmbedding = await this.createEmbedding(query);
 
-    // Query Vectorize for similar documents
+    // Use hybrid search if configured
+    if (this.config.usePostgresVector || this.config.hybridSearch) {
+      return await this.retrieveWithHybridSearch(queryEmbedding, top_k, filter);
+    }
+
+    // Default: Use Cloudflare Vectorize only
+    return await this.retrieveWithVectorize(queryEmbedding, top_k, filter);
+  }
+
+  /**
+   * Retrieve using Cloudflare Vectorize only
+   */
+  private async retrieveWithVectorize(
+    queryEmbedding: number[],
+    topK: number,
+    filter?: Record<string, any>
+  ): Promise<RetrievalSource[]> {
     const vectorResults = await this.env.VECTORIZE.query(queryEmbedding, {
-      topK: top_k,
+      topK,
       returnMetadata: true,
     });
 
-    // Map results to RetrievalSource format
     const sources: RetrievalSource[] = [];
 
     for (const match of vectorResults.matches) {
@@ -111,13 +149,77 @@ export class RAGEngine {
         chunk_id: match.id,
         content: match.metadata?.text as string,
         score: match.score,
-        metadata: match.metadata,
+        metadata: { ...match.metadata, source: 'vectorize' },
       });
     }
 
-    await this.logger.info('Documents retrieved', { count: sources.length });
+    await this.logger.info('Documents retrieved from Vectorize', { count: sources.length });
 
     return sources;
+  }
+
+  /**
+   * Hybrid search: combines Cloudflare Vectorize and PostgreSQL pgvector
+   */
+  private async retrieveWithHybridSearch(
+    queryEmbedding: number[],
+    topK: number,
+    _filter?: Record<string, any>
+  ): Promise<RetrievalSource[]> {
+    const sources: RetrievalSource[] = [];
+
+    // PostgreSQL pgvector search
+    if (this.config.usePostgresVector || this.config.hybridSearch) {
+      await this.logger.info('Searching with pgvector');
+
+      try {
+        const pgResults = await this.db.searchRelevantChunks(
+          queryEmbedding,
+          this.config.hybridSearch ? Math.ceil(topK / 2) : topK,
+          0.7 // similarity threshold
+        );
+
+        for (const result of pgResults) {
+          sources.push({
+            document_id: result.document_id,
+            chunk_id: result.document_id + '-chunk',
+            content: result.content,
+            score: result.similarity,
+            metadata: { source: 'postgres-pgvector' }
+          });
+        }
+      } catch (error) {
+        await this.logger.error('PostgreSQL search failed, falling back to Vectorize', { error });
+      }
+    }
+
+    // Cloudflare Vectorize search (if hybrid mode or if PostgreSQL failed)
+    if ((this.config.hybridSearch || sources.length === 0) && this.env.VECTORIZE) {
+      await this.logger.info('Searching with Vectorize');
+
+      const vectorResults = await this.env.VECTORIZE.query(queryEmbedding, {
+        topK: this.config.hybridSearch ? Math.ceil(topK / 2) : topK,
+        returnMetadata: true
+      });
+
+      for (const match of vectorResults.matches) {
+        sources.push({
+          document_id: match.metadata?.document_id as string,
+          chunk_id: match.id,
+          content: match.metadata?.text as string,
+          score: match.score,
+          metadata: { ...match.metadata, source: 'vectorize' }
+        });
+      }
+    }
+
+    // Sort by score and take top K
+    sources.sort((a, b) => b.score - a.score);
+    const finalSources = sources.slice(0, topK);
+
+    await this.logger.info('Documents retrieved', { count: finalSources.length });
+
+    return finalSources;
   }
 
   /**
@@ -286,7 +388,8 @@ Instructions:
   }
 
   /**
-   * Ingest document into knowledge base (wrapper)
+   * Ingest document into knowledge base
+   * Supports both Cloudflare Vectorize and PostgreSQL pgvector
    */
   async ingestDocument(documentData: {
     title: string;
@@ -298,6 +401,26 @@ Instructions:
   }): Promise<{ document_id: string; chunks_created: number }> {
     await this.logger.info('Ingesting document', { title: documentData.title });
 
+    // If using PostgreSQL for vector storage, use enhanced ingestion
+    if (this.config.usePostgresVector) {
+      return await this.ingestDocumentWithPostgres(documentData);
+    }
+
+    // Default: Use Cloudflare Vectorize
+    return await this.ingestDocumentWithVectorize(documentData);
+  }
+
+  /**
+   * Ingest document using Cloudflare Vectorize
+   */
+  private async ingestDocumentWithVectorize(documentData: {
+    title: string;
+    content: string;
+    content_type?: string;
+    source?: string;
+    tags?: string[];
+    metadata?: Record<string, unknown>;
+  }): Promise<{ document_id: string; chunks_created: number }> {
     // Chunk the document
     const chunks = this.chunkText(documentData.content);
 
@@ -351,7 +474,7 @@ Instructions:
     }
 
     // Batch insert vectors into Vectorize
-    if (vectors.length > 0) {
+    if (vectors.length > 0 && this.env.VECTORIZE) {
       await this.env.VECTORIZE.insert(vectors);
     }
 
@@ -360,7 +483,7 @@ Instructions:
       .bind(Date.now(), documentId)
       .run();
 
-    await this.logger.info('Document ingested successfully', {
+    await this.logger.info('Document ingested with Vectorize', {
       documentId,
       chunksCreated: chunks.length,
     });
@@ -372,9 +495,59 @@ Instructions:
   }
 
   /**
+   * Ingest document with PostgreSQL pgvector (enhanced method)
+   */
+  private async ingestDocumentWithPostgres(documentData: {
+    title: string;
+    content: string;
+    content_type?: string;
+    source?: string;
+    tags?: string[];
+    metadata?: Record<string, unknown>;
+  }): Promise<{ document_id: string; chunks_created: number }> {
+    // Step 1: Chunk the document
+    const chunks = this.chunkText(documentData.content);
+
+    // Step 2: Create embeddings for all chunks
+    const chunkEmbeddings = await Promise.all(
+      chunks.map(chunk => this.createEmbedding(chunk))
+    );
+
+    // Step 3: Create document embedding (average of chunk embeddings)
+    const documentEmbedding = this.averageEmbeddings(chunkEmbeddings);
+
+    // Step 4: Prepare chunk data
+    const chunksWithEmbeddings = chunks.map((content, index) => ({
+      content,
+      embedding: chunkEmbeddings[index]
+    }));
+
+    // Step 5: Insert into unified database (routes to PostgreSQL for vector data)
+    const documentId = await this.db.insertDocumentWithChunks(
+      documentData.title,
+      documentData.content,
+      chunksWithEmbeddings,
+      documentEmbedding,
+      documentData.metadata
+    );
+
+    await this.logger.info('Document ingested with PostgreSQL', {
+      documentId,
+      chunksCreated: chunks.length
+    });
+
+    return {
+      document_id: documentId,
+      chunks_created: chunks.length
+    };
+  }
+
+  /**
    * Chunk text into smaller pieces
    */
-  private chunkText(text: string, chunkSize = 1000, overlap = 200): string[] {
+  private chunkText(text: string, chunkSize?: number, overlap?: number): string[] {
+    const actualChunkSize = chunkSize || this.config.chunkSize;
+    const actualOverlap = overlap || this.config.chunkOverlap;
     const chunks: string[] = [];
 
     // Try to split by paragraphs first
@@ -383,7 +556,7 @@ Instructions:
     let currentChunk = '';
 
     for (const paragraph of paragraphs) {
-      if (currentChunk.length + paragraph.length < chunkSize) {
+      if (currentChunk.length + paragraph.length < actualChunkSize) {
         currentChunk += (currentChunk ? '\n\n' : '') + paragraph;
       } else {
         if (currentChunk) {
@@ -391,11 +564,11 @@ Instructions:
         }
 
         // Handle very long paragraphs
-        if (paragraph.length > chunkSize) {
+        if (paragraph.length > actualChunkSize) {
           let position = 0;
           while (position < paragraph.length) {
-            chunks.push(paragraph.slice(position, position + chunkSize));
-            position += chunkSize - overlap;
+            chunks.push(paragraph.slice(position, position + actualChunkSize));
+            position += actualChunkSize - actualOverlap;
           }
           currentChunk = '';
         } else {
@@ -519,5 +692,71 @@ Instructions:
       .run();
 
     await this.logger.info('Document re-indexed', { documentId, chunksCreated: chunks.length });
+  }
+
+  /**
+   * Average multiple embeddings
+   */
+  private averageEmbeddings(embeddings: number[][]): number[] {
+    if (embeddings.length === 0) return [];
+
+    const dimension = embeddings[0].length;
+    const average = new Array(dimension).fill(0);
+
+    for (const embedding of embeddings) {
+      for (let i = 0; i < dimension; i++) {
+        average[i] += embedding[i];
+      }
+    }
+
+    return average.map(val => val / embeddings.length);
+  }
+
+  /**
+   * Health check for all RAG components
+   */
+  async healthCheck(): Promise<{
+    d1: boolean;
+    postgres: boolean;
+    vectorize: boolean;
+    openai: boolean;
+  }> {
+    const results = {
+      d1: false,
+      postgres: false,
+      vectorize: false,
+      openai: false
+    };
+
+    // Check D1 and PostgreSQL via unified database
+    try {
+      const dbHealth = await this.db.healthCheck();
+      results.d1 = dbHealth.d1;
+      results.postgres = dbHealth.postgres;
+    } catch (error) {
+      await this.logger.error('Database health check failed', { error });
+    }
+
+    // Check Vectorize
+    try {
+      if (this.env.VECTORIZE) {
+        // Try a simple query with a dummy vector
+        const dummyVector = new Array(1536).fill(0);
+        await this.env.VECTORIZE.query(dummyVector, { topK: 1 });
+        results.vectorize = true;
+      }
+    } catch (error) {
+      await this.logger.error('Vectorize health check failed', { error });
+    }
+
+    // Check OpenAI API
+    try {
+      await this.createEmbedding('health check');
+      results.openai = true;
+    } catch (error) {
+      await this.logger.error('OpenAI health check failed', { error });
+    }
+
+    return results;
   }
 }
