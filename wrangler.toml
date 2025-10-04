@@ -36,10 +36,10 @@ index_name = "ai-agent-vectors"
 # R2 Storage Bindings
 # ==========================================
 # Note: R2 needs to be enabled in Cloudflare Dashboard first
-# Uncomment when R2 is enabled:
-# [[r2_buckets]]
-# binding = "STORAGE"
-# bucket_name = "ai-agent-files"
+# ✅ ENABLED - Create bucket 'ai-agent-files' in Dashboard before deployment
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "ai-agent-files"
 
 # ==========================================
 # KV Namespace Bindings (for caching)
@@ -52,30 +52,38 @@ id = "ac78ef75b22f417d806008d1c948d33e"
 # Queue Bindings (for task processing)
 # ==========================================
 # Note: Queues require Workers Paid plan
-# Uncomment when upgraded:
-# [[queues.producers]]
-# binding = "TASK_QUEUE"
-# queue = "ai-agent-tasks"
-#
-# [[queues.consumers]]
-# queue = "ai-agent-tasks"
-# max_batch_size = 10
-# max_batch_timeout = 30
+# ✅ ENABLED - For async task processing
+[[queues.producers]]
+binding = "TASK_QUEUE"
+queue = "ai-agent-tasks"
+
+[[queues.consumers]]
+queue = "ai-agent-tasks"
+max_batch_size = 10
+max_batch_timeout = 30
+
+[[queues.producers]]
+binding = "BACKUP_QUEUE"
+queue = "ai-agent-backup"
+
+[[queues.consumers]]
+queue = "ai-agent-backup"
+max_batch_size = 5
+max_batch_timeout = 60
 
 # ==========================================
 # Cron Triggers (for scheduled tasks)
 # ==========================================
 # Note: Cron triggers require Workers Paid plan ($5/month)
-# DISABLED - Using NAS cron jobs instead for free alternative
-# To enable: Uncomment below and upgrade to Workers Paid plan
+# ✅ ENABLED - Using Cloudflare Cron for automated scheduling
 #
-# [triggers]
-# crons = [
-#   "*/5 * * * *",   # Database sync every 5 minutes
-#   "*/30 * * * *",  # Task distribution every 30 minutes
-#   "0 2 * * *",     # Daily full backup at 2 AM
-#   "0 */6 * * * ",  # R2 sync every 6 hours
-# ]
+[triggers]
+crons = [
+  "*/5 * * * *",   # Database sync every 5 minutes
+  "*/30 * * * *",  # Task distribution every 30 minutes
+  "0 2 * * *",     # Daily full backup at 2 AM
+  "0 */6 * * *",   # R2 sync every 6 hours
+]
 
 # ==========================================
 # Build Configuration

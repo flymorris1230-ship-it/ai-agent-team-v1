@@ -7,9 +7,10 @@
 ## 📌 專案當前狀態
 
 **專案名稱**: AI Agent Team v1
-**架構版本**: v2.1 (Hybrid + Multi-LLM + Testing)
+**架構版本**: v2.2 (Hybrid + Multi-LLM + Testing + Cloudflare Paid)
 **最後更新**: 2025-10-04
-**當前階段**: ✅ 核心功能與測試框架已完成，進入 API 配置與實際測試階段
+**當前階段**: ✅ Cloudflare 付費功能已啟用，進入部署和成本監控階段
+**預估成本**: $5-50/月 (視使用量而定)
 
 ---
 
@@ -51,12 +52,45 @@
   - [x] 性能模式測試
   - [x] 文檔索引和語義搜尋測試
 - [x] 擴展響應類型以包含 provider 和 cost 元數據
-- [x] 測試套件執行驗證 (18 tests passed)
+- [x] 測試套件執行驗證 (26 tests passed)
 - [x] TypeScript 編譯無錯誤
+
+### Phase 5: 啟用 Cloudflare 付費功能 ✅
+- [x] 更新 `wrangler.toml` 啟用 Cron Triggers
+- [x] 更新 `wrangler.toml` 啟用 R2 Storage
+- [x] 更新 `wrangler.toml` 啟用 Queues
+- [x] 更新 `.env.example` 添加付費功能配置
+- [x] 更新 `COST-ANALYSIS.md` 完整付費方案成本估算
+  - [x] 詳細定價分析 (Workers/R2/D1/Vectorize/Queues)
+  - [x] 三種使用情境 (輕量/中等/重度)
+  - [x] 方案比較表 (免費 vs 付費)
+- [x] 創建 `docs/cloudflare-paid-deployment.md` 部署指南
+  - [x] 完整部署流程 (6 個 Phase)
+  - [x] 功能驗證清單
+  - [x] 故障排除指南
+  - [x] 成本監控方案
 
 ---
 
 ## 🎯 當前待辦事項 (Current TODO)
+
+### 優先級 0: Cloudflare Dashboard 操作 (必須) 🆕
+- [ ] **升級到 Workers Paid Plan** ($5/月)
+  - 前往: https://dash.cloudflare.com/[account-id]/workers/plans
+  - 選擇 "Workers Paid" 並綁定信用卡
+
+- [ ] **創建 R2 Bucket**
+  - 前往: R2 → Create bucket
+  - 名稱: `ai-agent-files`
+  - 複製 Public URL 到 `.env`
+
+- [ ] **創建 Queues** (2 個)
+  - Queue 1: `ai-agent-tasks` (max_batch_size: 10)
+  - Queue 2: `ai-agent-backup` (max_batch_size: 5)
+
+- [ ] **設定預算警報**
+  - 前往: Billing → Budget alerts
+  - 設定上限: $20-50/月
 
 ### 優先級 1: 環境配置 (用戶操作)
 - [ ] **獲取 Gemini API Key** (免費)
@@ -113,19 +147,35 @@
   - [ ] PostgreSQL → D1 同步
   - [ ] 向量搜尋功能
 
-### 優先級 4: 部署準備
-- [ ] **設定 API 預算上限**
-  - OpenAI: https://platform.openai.com/account/billing/limits
-  - Gemini: https://aistudio.google.com/app/apikey (查看用量)
-
+### 優先級 4: 部署與監控
 - [ ] **部署到 Cloudflare Workers**
   ```bash
+  # 1. 驗證配置
+  npm run typecheck
+
+  # 2. 測試構建
+  npm run build:test
+
+  # 3. 部署到 Production
   npm run deploy
   ```
 
+- [ ] **驗證部署功能**
+  - [ ] API Health Check: `curl https://api.shyangtsuen.xyz/health`
+  - [ ] Cron Triggers 運行 (等待 5 分鐘檢查日誌)
+  - [ ] R2 文件上傳測試
+  - [ ] Queues 消息處理測試
+
+- [ ] **設定 API 預算上限**
+  - OpenAI: https://platform.openai.com/account/billing/limits
+  - Gemini: https://aistudio.google.com/app/apikey (查看用量)
+  - Cloudflare: Dashboard → Billing → Budget alerts
+
 - [ ] **監控成本和性能**
-  - 查看 LLM Router 統計
-  - 確認成本節省效果
+  - [ ] 查看 Cloudflare Dashboard Analytics
+  - [ ] 查看 LLM Router 統計
+  - [ ] 設定每日成本檢查腳本
+  - [ ] 確認成本節省效果
 
 ---
 
@@ -281,6 +331,16 @@ POSTGRES_PASSWORD=your-password
 ---
 
 ## 📝 變更日誌 (Changelog)
+
+### 2025-10-04 - v2.2
+- ✅ 啟用 Cloudflare 付費功能 (Phase 5)
+- ✅ 啟用 Cron Triggers (自動化定時任務)
+- ✅ 啟用 R2 Storage (對象存儲 + 免費出站流量)
+- ✅ 啟用 Queues (異步任務處理)
+- ✅ 完整成本估算 (輕量 $10/月, 中等 $18/月, 重度 $40/月)
+- ✅ 創建部署指南 (docs/cloudflare-paid-deployment.md)
+- ✅ 更新 .env.example (付費功能配置)
+- ✅ 預估成本範圍: $5-50/月
 
 ### 2025-10-04 - v2.1
 - ✅ 建立完整測試框架 (Phase 4)
