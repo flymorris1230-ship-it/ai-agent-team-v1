@@ -29,11 +29,9 @@ database_id = "99db8f91-db78-451a-bdc8-75dd2cf3f25b"
 # ==========================================
 # Vectorize Bindings (for RAG)
 # ==========================================
-# Note: Vectorize requires beta access - commented out for now
-# Uncomment when Vectorize is available in your account
-# [[vectorize]]
-# binding = "VECTORIZE"
-# index_name = "ai-agent-vectors"
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "ai-agent-vectors"
 
 # ==========================================
 # R2 Storage Bindings
@@ -138,6 +136,10 @@ queue = "ai-agent-tasks"
 [[env.production.queues.producers]]
 binding = "BACKUP_QUEUE"
 queue = "ai-agent-backup"
+
+[[env.production.vectorize]]
+binding = "VECTORIZE"
+index_name = "ai-agent-vectors"
 
 # ==========================================
 # Staging Configuration (Optional)

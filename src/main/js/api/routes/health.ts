@@ -100,7 +100,7 @@ healthRoutes.get('/vectorize', async (c) => {
     const testVector = new Array(1536).fill(0.1); // OpenAI embedding dimension
     const result = await c.env.VECTORIZE.query(testVector, {
       topK: 1,
-      returnMetadata: false,
+      returnMetadata: 'none',
     });
 
     const responseTime = Date.now() - startTime;
