@@ -1,367 +1,296 @@
-# 🔄 專案繼續點 - Cloudflare Tunnel 設置
+# 🔄 專案繼續點 - Phase 7: RAG 系統整合
 
 **最後更新**: 2025-10-05
-**當前狀態**: 正在進行 Cloudflare Tunnel 設置
-**進度**: 步驟 1/5 - 等待創建 Tunnel 並獲取 Token
+**當前狀態**: ✅ Phase 6 完成 (pgvector 安裝)
+**下一階段**: Phase 7 - RAG 系統整合
+**進度**: 6/7 (86% 完成)
 
 ---
 
 ## 📍 **你現在的位置**
 
-你正在設置 Cloudflare Tunnel，以便能夠異地安全訪問 NAS 上的 PostgreSQL 資料庫。
+恭喜！你已經完成了 Phase 6 - pgvector 向量資料庫安裝。
 
-### ✅ **已完成的工作**
-
-1. ✅ GitHub 專案已同步（本地與遠端一致）
-2. ✅ 本地檔案已加入版本控制
-3. ✅ 專案進度已確認（95% 生產環境就緒）
-4. ✅ Tunnel 設置文件已準備：
-   - `TUNNEL-SETUP-COMMANDS.md` - 詳細手動指南
-   - `QUICK-TUNNEL-SETUP.sh` - 自動化腳本
-   - `nas-postgres-proxy.py` - PostgreSQL HTTP Proxy
-   - `nas-proxy.env` - 環境配置範例
-
-### 🎯 **下一步要做的事**
-
-你需要完成 **Cloudflare Tunnel 設置的 5 個步驟**：
+現在準備進入 **Phase 7 - RAG 系統整合**，將 RAG Engine 與 NAS PostgreSQL pgvector 整合。
 
 ---
 
-## 📋 **步驟 1：創建 Cloudflare Tunnel**（👈 你在這裡）
+## ✅ **Phase 6 完成摘要**
 
-### 操作步驟：
+### 已完成的工作
+1. ✅ **pgvector 擴展安裝** - 通過 pgAdmin4 GUI
+2. ✅ **生產環境表創建** - `knowledge_vectors`
+   - UUID 主鍵 + 1536 維向量
+   - JSONB metadata 欄位
+   - 時間戳記欄位
+3. ✅ **高效能索引配置**
+   - ivfflat 向量索引 (100 lists, cosine similarity)
+   - GIN 索引 (metadata JSONB 查詢)
+   - B-tree 索引 (created_at 時間排序)
+4. ✅ **向量操作測試** - Cosine/L2/Inner Product 全部通過
+5. ✅ **文檔更新和 Git 備份**
 
-1. **訪問 Cloudflare Zero Trust**
-   ```
-   https://one.dash.cloudflare.com/
-   ```
+### 成果
+- 💰 零成本向量資料庫（vs Cloudflare Vectorize $61/月）
+- 📊 1536 維向量支援（OpenAI embedding 兼容）
+- 🔍 JSONB metadata 查詢支援
+- ⏱️ 時間排序索引支援
 
-2. **如果沒有 Zero Trust**，先啟用（免費）：
-   - 訪問：https://dash.cloudflare.com
-   - 左側選單 → **Zero Trust** → **開始使用**
-
-3. **創建 Tunnel**：
-   - 點擊：**Networks** → **Tunnels**
-   - 點擊：**Create a tunnel**
-   - 選擇：**Cloudflared**
-   - 名稱輸入：`stic-nas`
-   - 點擊：**Save tunnel**
-
-4. **選擇環境 - Docker**：
-   - 在 "Choose your environment" 頁面
-   - 選擇：**Docker**
-   - 你會看到一個命令，例如：
-     ```bash
-     docker run cloudflare/cloudflared:latest tunnel \
-       --no-autoupdate run \
-       --token eyJhIjoiXXXXXXXXXXXXXX...
-     ```
-
-5. **複製 Token**：
-   - 從命令中複製 `--token` 後面的完整字串
-   - Token 通常以 `eyJ` 開頭，很長
-
-### 完成後：
-
-將獲得的 token 準備好，然後繼續到步驟 2。
+### Git Status
+- Commit: `97974cd` - Complete pgvector installation
+- ✅ 推送到 GitHub
+- ✅ Working tree clean
 
 ---
 
-## 📋 **步驟 2：在 NAS 部署 cloudflared**
+## 🎯 **Phase 7: 下一步要做什麼**
 
-### 操作步驟：
+### 目標
+將 RAG Engine 整合 NAS PostgreSQL pgvector，實現完整的檢索增強生成功能。
 
-1. **訪問 NAS 管理界面**
-   ```
-   https://stic.tw3.quickconnect.to/
-   ```
+### 預估時間
+- 配置: 10 分鐘
+- 開發: 30-60 分鐘
+- 測試: 20 分鐘
+- **總計**: 1-1.5 小時
 
-2. **創建任務排程器**：
-   - **控制台** → **任務排程器**
-   - **新增** → **觸發的任務** → **用戶定義的腳本**
-
-3. **配置任務**：
-
-   **一般設定**：
-   - 任務名稱：`Cloudflare Tunnel`
-   - 使用者：`root`
-
-   **排程**：
-   - 選擇：**開機時**
-
-   **任務設定** - 執行命令：
-   ```bash
-   # 清理舊容器
-   docker stop cloudflare-tunnel 2>/dev/null || true
-   docker rm cloudflare-tunnel 2>/dev/null || true
-
-   # 啟動 Tunnel（替換下面的 YOUR_TOKEN）
-   docker run -d \
-     --name cloudflare-tunnel \
-     --restart=unless-stopped \
-     cloudflare/cloudflared:latest tunnel \
-     --no-autoupdate run \
-     --token YOUR_TOKEN_HERE
-   ```
-
-   ⚠️ **將 `YOUR_TOKEN_HERE` 替換為步驟 1 獲得的 token**
-
-4. **執行任務**：
-   - 點擊 **確定**
-   - 右鍵該任務 → **執行**
-
-5. **驗證運行**：
-   - **Container Manager** → **容器**
-   - 確認 `cloudflare-tunnel` 容器 ✅ 運行中
-   - 點擊查看日誌，應該看到：
-     ```
-     INF Connection registered connIndex=0
-     INF Registered tunnel connection
-     ```
+### 主要任務
+1. 配置環境變數（PostgreSQL 連接資訊）
+2. 創建 PostgresVectorStore 適配器
+3. 更新 RAG Engine 整合 pgvector
+4. 實現 API 端點
+5. 測試完整 RAG 流程
 
 ---
 
-## 📋 **步驟 3：配置 Public Hostname**
+## 🚀 **快速開始 Phase 7**
 
-回到 Cloudflare Zero Trust Dashboard：
+### 方法 1：閱讀詳細指南（推薦）
 
-### 配置 1：PostgreSQL Proxy（必須）
-
-1. 找到你的 Tunnel `stic-nas`
-2. **Public Hostname** → **Add a public hostname**
-3. 填入以下資訊：
-   - **Subdomain**: `postgres-ai-agent`
-   - **Domain**: `shyangtsuen.xyz`
-   - **Path**: 留空
-   - **Type**: `HTTP`
-   - **URL**: `http://192.168.1.114:8000`
-4. 點擊 **Save hostname**
-
-### 配置 2：健康檢查（可選）
-
-再次點擊 **Add a public hostname**：
-- **Subdomain**: `health.stic`
-- **Domain**: `shyangtsuen.xyz`
-- **Type**: `HTTP`
-- **URL**: `http://192.168.1.114:8000/health`
-
-### 配置 3：NAS 管理界面（可選）
-
-再次點擊 **Add a public hostname**：
-- **Subdomain**: `nas.stic`
-- **Domain**: `shyangtsuen.xyz`
-- **Type**: `HTTPS`
-- **URL**: `https://192.168.1.114:5001`
-- ✅ 勾選 **No TLS Verify**
-
----
-
-## 📋 **步驟 4：部署 PostgreSQL HTTP Proxy**
-
-### 4.1 上傳文件到 NAS
-
-1. **File Station** 創建目錄：`docker/postgres-proxy`
-2. 上傳文件（從你的 Mac）：
-   - 檔案位置：`/mnt/c/Users/flyca/Desktop/claude/ai-agent-team-v1/nas-postgres-proxy.py`
-   - 上傳到：`/volume1/docker/postgres-proxy/nas-postgres-proxy.py`
-
-### 4.2 下載 Python 映像
-
-1. **Container Manager** → **映像**
-2. 搜索：`python:3.11-slim`
-3. 點擊下載
-
-### 4.3 創建容器
-
-1. **Container Manager** → **容器** → **新增**
-2. 選擇：`python:3.11-slim`
-
-**常規設定**：
-- 容器名稱：`postgres-proxy`
-- ✅ 啟用自動重新啟動
-
-**進階設定** → **端口設定**：
-| 本地端口 | 容器端口 | 類型 |
-|---------|---------|------|
-| 8000    | 8000    | TCP  |
-
-**進階設定** → **儲存空間** → **新增** → **掛載檔案**：
-- 檔案：`/volume1/docker/postgres-proxy/nas-postgres-proxy.py`
-- 掛載路徑：`/app/proxy.py`
-
-**進階設定** → **環境**：
+```bash
+cd /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1
+cat docs/guides/NEXT-STEPS.md
 ```
+
+**NEXT-STEPS.md 包含**:
+- 完整的步驟分解
+- 程式碼範例
+- 測試命令
+- 故障排除指南
+
+### 方法 2：快速命令（進階）
+
+如果你已經熟悉流程，直接執行：
+
+```bash
+# 1. 確認環境配置
+cat .env | grep -E "(POSTGRES|ENABLE_POSTGRES_VECTOR)"
+
+# 2. 如果需要，添加配置
+cat >> .env << 'EOF'
+# PostgreSQL pgvector
 POSTGRES_HOST=192.168.1.114
 POSTGRES_PORT=5532
 POSTGRES_DB=postgres
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=Morris1230
-PROXY_API_KEY=K6udBL4OmPs3J+hOLkjM6MfSatZQW+vXY1vm/o9y0L0=
-SERVER_PORT=8000
-```
-
-**進階設定** → **執行命令**：
-```bash
-sh -c "pip install psycopg2-binary && python /app/proxy.py"
-```
-
-**完成**：
-- 點擊 **完成**
-- 啟動容器
-
-### 4.4 驗證運行
-
-查看容器日誌，應該看到：
-```
-Server running on port 8000
-```
-
----
-
-## 📋 **步驟 5：測試與配置 Workers**
-
-### 5.1 測試遠端連接
-
-在你的 Mac 終端執行：
-
-```bash
-# 等待 DNS 傳播
-sleep 30
-
-# 測試健康檢查
-curl https://postgres-ai-agent.shyangtsuen.xyz/health
-
-# 期望看到
-{
-  "status": "healthy",
-  "database": "connected",
-  "host": "192.168.1.114:5532",
-  "pgvector": "available"
-}
-```
-
-### 5.2 配置 Cloudflare Workers
-
-```bash
-cd /mnt/c/Users/flyca/Desktop/claude/ai-agent-team-v1
-
-# 設定 Proxy URL
-echo "https://postgres-ai-agent.shyangtsuen.xyz" | \
-  npx wrangler secret put POSTGRES_PROXY_URL --env production
-
-# 設定 API Key
-echo "K6udBL4OmPs3J+hOLkjM6MfSatZQW+vXY1vm/o9y0L0=" | \
-  npx wrangler secret put POSTGRES_PROXY_API_KEY --env production
-```
-
-### 5.3 更新本地配置
-
-編輯 `.env` 文件，添加：
-```bash
-# PostgreSQL Proxy (通過 Cloudflare Tunnel)
-POSTGRES_PROXY_URL=https://postgres-ai-agent.shyangtsuen.xyz
-POSTGRES_PROXY_API_KEY=K6udBL4OmPs3J+hOLkjM6MfSatZQW+vXY1vm/o9y0L0=
 ENABLE_POSTGRES_VECTOR=true
+EOF
+
+# 3. 創建開發分支（可選）
+git checkout -b phase-7-rag-integration
+
+# 4. 開始開發
+# 參考 NEXT-STEPS.md 的詳細步驟
 ```
 
 ---
 
-## ✅ **完成檢查清單**
+## 📋 **Phase 7 完成檢查清單**
 
-- [ ] 步驟 1: Cloudflare Tunnel 已創建並獲取 token
-- [ ] 步驟 2: cloudflared 容器在 NAS 上運行
-- [ ] 步驟 3: Public Hostname 已配置（至少 postgres-ai-agent）
-- [ ] 步驟 4: PostgreSQL Proxy 容器在 NAS 上運行
-- [ ] 步驟 5: 遠端連接測試通過
-- [ ] 步驟 5: Workers Secrets 已配置
-- [ ] 步驟 5: 本地 .env 已更新
+完成後確認以下項目：
 
----
-
-## 📚 **參考文件**
-
-- **詳細指南**: `TUNNEL-SETUP-COMMANDS.md`
-- **自動化腳本**: `QUICK-TUNNEL-SETUP.sh`（需要互動）
-- **Proxy 程式**: `nas-postgres-proxy.py`
-- **環境配置**: `nas-proxy.env`
+- [ ] 環境變數配置完成 (POSTGRES_* 變數)
+- [ ] PostgresVectorStore 類實現完成
+- [ ] RAGEngine 整合 pgvector 完成
+- [ ] 測試套件通過
+- [ ] API 端點實現完成 (/api/rag/*)
+- [ ] 本地測試全部通過
+- [ ] 文檔更新完成
+- [ ] Git 提交並推送到 GitHub
 
 ---
 
-## 🆘 **遇到問題？**
+## 💰 **Phase 7 成本影響**
 
-### Tunnel 無法連接
+- **pgvector 儲存**: $0 (NAS 本地)
+- **Embedding API**: $0 (使用 Gemini 免費)
+- **Chat Completion**: $2-5/月 (balanced strategy)
+- **總計**: $2-5/月
+
+**節省**: ~$61/月（vs Cloudflare Vectorize）
+
+---
+
+## 🗂️ **重要資源**
+
+### 文檔
+- **詳細指南**: `docs/guides/NEXT-STEPS.md` ⭐ 必讀
+- **專案狀態**: `PROJECT-CONTINUATION.md`
+- **會話狀態**: `docs/guides/SESSION-STATUS.md`
+- **pgvector 狀態**: `docs/pgvector/STATUS.md`
+
+### pgAdmin4 管理
+- **URL**: https://postgres.shyangtsuen.xyz
+- **登入**: flycan1230@hotmail.com / Morris1230
+- **Server**: NAS PostgreSQL pgvector (192.168.1.114:5532)
+- **Database**: postgres
+- **Table**: knowledge_vectors
+
+### API 配置
+- **OpenAI API**: 已配置
+- **Gemini API**: 已配置（免費 tier）
+- **LLM Strategy**: balanced
+
+---
+
+## 🛠️ **快速測試當前狀態**
+
 ```bash
-# 查看 NAS 上的 Tunnel 日誌
-docker logs cloudflare-tunnel
+# 1. 檢查 TypeScript 編譯
+npm run typecheck
+
+# 2. 運行測試套件
+npm test
+
+# 3. 啟動開發服務器
+npm run dev
+
+# 4. 測試 pgvector 連接（通過 pgAdmin4）
+# 訪問: https://postgres.shyangtsuen.xyz
+# 執行: SELECT * FROM knowledge_vectors LIMIT 1;
+
+# 5. 查看 Git 狀態
+git status
+git log --oneline -3
 ```
 
-### Proxy 無法運行
+---
+
+## 📊 **專案整體進度**
+
+### 已完成 Phases
+- ✅ Phase 1: 技術債務清理
+- ✅ Phase 2: 成本優化驗證
+- ✅ Phase 3: 多 LLM 智能路由系統
+- ✅ Phase 4: 測試框架建立
+- ✅ Phase 5: Cloudflare 付費功能啟用
+- ✅ Phase 6: pgvector 向量資料庫安裝
+
+### 當前 Phase
+- 🔄 **Phase 7: RAG 系統整合**（下一步）
+
+### 未來 Phases
+- ⏳ Phase 8: 生產環境部署
+- ⏳ Phase 9: 監控和優化
+
+**進度**: 6/7 完成 (86%)
+
+---
+
+## 🎯 **立即開始**
+
+### 選項 A: 閱讀詳細指南（推薦新手）
+
 ```bash
-# 查看 NAS 上的 Proxy 日誌
-docker logs postgres-proxy
-
-# 測試本地連接
-curl http://192.168.1.114:8000/health
+cat docs/guides/NEXT-STEPS.md
 ```
 
-### DNS 無法解析
-```bash
-# 測試 DNS
-dig postgres-ai-agent.shyangtsuen.xyz +short
-
-# 檢查 Cloudflare DNS Records
-# https://dash.cloudflare.com → 域名 → DNS
-```
-
----
-
-## 🎯 **快速恢復指令**
-
-當你下次打開終端時，執行：
+### 選項 B: 直接開始開發（熟悉流程）
 
 ```bash
-cd /mnt/c/Users/flyca/Desktop/claude/ai-agent-team-v1
-cat CONTINUE-HERE.md
+# 確認環境
+cat .env | grep POSTGRES
+
+# 創建分支
+git checkout -b phase-7-rag-integration
+
+# 開始開發 PostgresVectorStore
+# 參考 NEXT-STEPS.md 步驟 2.1
 ```
 
-然後從當前步驟繼續。
+### 選項 C: 查看專案全貌
 
----
-
-## 📊 **整體架構**
-
-```
-Cloudflare Workers (生產環境)
-    ↓ HTTPS + API Key
-Cloudflare Edge Network
-    ↓ Encrypted Tunnel
-cloudflared (NAS Docker)
-    ↓ HTTP (內網)
-PostgreSQL Proxy (NAS Docker :8000)
-    ↓ psycopg2
-PostgreSQL + pgvector (NAS Docker :5532)
+```bash
+cat PROJECT-CONTINUATION.md
 ```
 
 ---
 
-## 💡 **重要資訊**
+## 🆘 **需要幫助？**
 
-**NAS 資訊**：
-- IP: 192.168.1.114
-- 訪問: https://stic.tw3.quickconnect.to/
-- PostgreSQL Port: 5532
-- PostgreSQL 密碼: Morris1230
+### PostgreSQL 連接問題
+```bash
+# 測試 pgAdmin4
+# https://postgres.shyangtsuen.xyz
 
-**Cloudflare 資訊**：
-- 域名: shyangtsuen.xyz
-- Tunnel 名稱: stic-nas
-- API Key: K6udBL4OmPs3J+hOLkjM6MfSatZQW+vXY1vm/o9y0L0=
+# 驗證 pgvector
+# SELECT extname FROM pg_extension WHERE extname = 'vector';
 
-**預期端點**：
-- PostgreSQL Proxy: https://postgres-ai-agent.shyangtsuen.xyz
-- 健康檢查: https://health.stic.shyangtsuen.xyz
-- NAS 管理: https://nas.stic.shyangtsuen.xyz
+# 驗證表
+# SELECT * FROM knowledge_vectors LIMIT 1;
+```
+
+### Multi-LLM 問題
+```bash
+# 測試 LLM Router
+npm test -- llm-router.test.ts
+
+# 檢查 API Keys
+cat .env | grep -E "(OPENAI|GEMINI)_API_KEY"
+```
+
+### Git 問題
+```bash
+# 查看狀態
+git status
+
+# 查看最近提交
+git log --oneline -5
+
+# 同步遠端
+git pull origin main
+```
 
 ---
 
-**🎯 下次開啟時，直接從步驟 1 開始執行！**
+## 📚 **參考資料**
+
+- **pgvector 文檔**: https://github.com/pgvector/pgvector
+- **OpenAI Embeddings**: https://platform.openai.com/docs/guides/embeddings
+- **Gemini API**: https://ai.google.dev/docs
+- **Cloudflare Workers**: https://developers.cloudflare.com/workers/
+
+---
+
+## ✨ **下一次開啟終端時**
+
+執行以下命令立即繼續：
+
+```bash
+cd /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1
+cat docs/guides/CONTINUE-HERE.md
+cat docs/guides/NEXT-STEPS.md
+```
+
+---
+
+**🎯 準備好開始 Phase 7 了嗎？讓我們開始整合 RAG 系統吧！🚀**
+
+**預估時間**: 1-1.5 小時
+**難度**: ⭐⭐⭐ 中等
+**收益**: 完整的 RAG 檢索增強生成系統 + 零成本向量存儲
+
+---
+
+**Good luck! 🎉**
