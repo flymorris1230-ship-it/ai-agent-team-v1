@@ -1,0 +1,38 @@
+# ==========================================
+# Cloudflare Workers Local Development Variables (Example)
+# ==========================================
+# Copy this file to .dev.vars and fill in your values
+# This file is used by `wrangler dev` for local development
+# DO NOT commit .dev.vars to Git!
+#
+# Note: .dev.vars is for Cloudflare Workers local development
+#       .env is for Node.js scripts and tests
+
+# ==========================================
+# Factory OS Integration
+# ==========================================
+# Local development (Factory OS running on localhost:3001)
+FACTORY_OS_URL="http://localhost:3001"
+FACTORY_OS_API_KEY="your-api-key-here"
+
+# For testing against production Factory OS:
+# FACTORY_OS_URL="https://factory-os.shyangtsuen.xyz"
+# FACTORY_OS_API_KEY="your-production-api-key"
+
+# ==========================================
+# LLM API Keys (if needed for local testing)
+# ==========================================
+OPENAI_API_KEY="sk-your-openai-api-key-here"
+GEMINI_API_KEY="your-gemini-api-key-here"
+
+# ==========================================
+# PostgreSQL HTTP Proxy (通過 Cloudflare Tunnel)
+# ==========================================
+POSTGRES_PROXY_API_KEY="your-proxy-api-key-here"
+POSTGRES_PROXY_URL="https://postgres-ai-agent.shyangtsuen.xyz"
+
+# ==========================================
+# Security (Development Keys)
+# ==========================================
+JWT_SECRET="your-jwt-secret-key-change-in-production"
+API_KEY="your-api-key-here"
