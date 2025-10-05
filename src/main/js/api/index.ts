@@ -16,6 +16,7 @@ import { agentRoutes } from './routes/agents';
 import { knowledgeRoutes } from './routes/knowledge';
 import { authRoutes } from './routes/auth';
 import { healthRoutes } from './routes/health';
+import { factoryOsRoutes } from './routes/factory-os';
 
 // Create Hono app
 const app = new Hono<{ Bindings: Env }>();
@@ -26,8 +27,16 @@ app.use('*', prettyJSON());
 app.use(
   '*',
   cors({
-    origin: ['http://localhost:3000', 'https://yourapp.com'],
+    origin: [
+      'http://localhost:3000', // Local development
+      'https://yourapp.com',
+      'http://localhost:3001', // Genesis Factory OS local dev
+      'https://factory-os.shyangtsuen.xyz', // Genesis Factory OS production
+      'https://genesis-factory-os.vercel.app', // Genesis Factory OS Vercel
+    ],
     credentials: true,
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
   })
 );
 
@@ -45,6 +54,7 @@ app.get('/', (c) => {
       agents: '/api/v1/agents',
       knowledge: '/api/v1/knowledge',
       health: '/api/v1/health',
+      'factory-os': '/api/v1/factory-os', // Genesis Factory OS integration
     },
     documentation: '/api/v1/docs',
   });
@@ -60,6 +70,7 @@ apiV1.route('/tasks', taskRoutes);
 apiV1.route('/agents', agentRoutes);
 apiV1.route('/knowledge', knowledgeRoutes);
 apiV1.route('/health', healthRoutes);
+apiV1.route('/factory-os', factoryOsRoutes); // Genesis Factory OS integration
 
 app.route('/api/v1', apiV1);
 
