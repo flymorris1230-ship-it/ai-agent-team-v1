@@ -13,6 +13,17 @@
 
 ## 🎯 快速開始
 
+### 📌 **下次開啟專案先看這裡！**
+
+👉 **[NEXT_STEPS.md](NEXT_STEPS.md)** - 當前進度與下一步執行清單
+
+**當前狀態：**
+- ✅ Phase 0: 本地開發與測試（已完成 100%）
+- ⏳ Phase 1: 生產環境部署（待執行）
+- 🔜 Phase 2: 監控與告警設置（待執行）
+
+### 開發指南
+
 1. **閱讀 CLAUDE.md** - 包含所有開發規則和指南
 2. **查看 ai_agent_team_config.txt** - 完整的 Agent 團隊配置
 3. **遵循開發規範** - 使用 src/main/ 目錄結構
@@ -110,6 +121,13 @@ ai-agent-team-v1/
 - **RAG (Retrieval-Augmented Generation)** - 檢索增強生成
 - **OpenAI API** - LLM 服務
 - **MCP Protocol** - 模型上下文協議
+
+### 整合服務
+- **Factory OS** - 健康監控與整合 (✅ 已實現)
+  - 自動健康檢查 (每 5 分鐘)
+  - 歷史數據追蹤
+  - 統計分析與告警
+  - 推薦 + 兼容 API 端點
 
 ### 備份與運維
 - **NAS** - 本地備份
