@@ -92,3 +92,7 @@ wrangler.toml.local
 secrets/
 *.key
 *.pem
+
+# Local backups and configs
+.backup-local/
+.claude/
