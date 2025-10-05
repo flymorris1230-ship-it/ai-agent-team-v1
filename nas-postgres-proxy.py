@@ -131,8 +131,111 @@ class ProxyHandler(BaseHTTPRequestHandler):
         self._json_response({
             'success': False,
             'error': 'Not Found',
-            'available_endpoints': ['/health', '/info', '/test']
+            'available_endpoints': ['/health', '/info', '/test', '/query (POST)']
         }, 404)
+
+    def do_POST(self):
+        """Handle POST requests"""
+        # All POST endpoints require authentication
+        if not self._check_auth():
+            self._json_response({
+                'success': False,
+                'error': 'Unauthorized - Invalid or missing API key'
+            }, 401)
+            return
+
+        # Execute SQL query
+        if self.path == '/query':
+            self._handle_query()
+            return
+
+        # Default 404
+        self._json_response({
+            'success': False,
+            'error': 'Not Found',
+            'available_endpoints': ['/query (POST)']
+        }, 404)
+
+    def _handle_query(self):
+        """Execute SQL query"""
+        try:
+            # Read request body
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length == 0:
+                self._json_response({
+                    'success': False,
+                    'error': 'Empty request body'
+                }, 400)
+                return
+
+            body = self.rfile.read(content_length)
+            data = json.loads(body.decode('utf-8'))
+
+            query = data.get('query', '').strip()
+            if not query:
+                self._json_response({
+                    'success': False,
+                    'error': 'Missing "query" field in request body'
+                }, 400)
+                return
+
+            # Execute query
+            conn = None
+            try:
+                conn = get_connection()
+                if not conn:
+                    raise Exception("Could not get connection from pool")
+
+                cursor = conn.cursor()
+                cursor.execute(query)
+
+                # Check if query returns data
+                if cursor.description:
+                    # SELECT query
+                    columns = [desc[0] for desc in cursor.description]
+                    rows = cursor.fetchall()
+                    result = [dict(zip(columns, row)) for row in rows]
+
+                    self._json_response({
+                        'success': True,
+                        'query': query,
+                        'row_count': len(result),
+                        'columns': columns,
+                        'data': result
+                    })
+                else:
+                    # INSERT/UPDATE/DELETE query
+                    conn.commit()
+                    self._json_response({
+                        'success': True,
+                        'query': query,
+                        'message': f'Query executed successfully. Rows affected: {cursor.rowcount}'
+                    })
+
+                cursor.close()
+
+            except Exception as e:
+                if conn:
+                    conn.rollback()
+                self._json_response({
+                    'success': False,
+                    'error': str(e),
+                    'query': query
+                }, 500)
+            finally:
+                if conn:
+                    release_connection(conn)
+
+        except json.JSONDecodeError as e:
+            self._json_response({
+                'success': False,
+                'error': f'Invalid JSON: {str(e)}'
+            }, 400)
+        except Exception as e:
+            self._json_response({
+                'success': False,
+                'error': str(e)
+            }, 500)
 
     def _handle_health_check(self):
         """Health check with database connectivity test"""
@@ -201,7 +304,8 @@ class ProxyHandler(BaseHTTPRequestHandler):
             'endpoints': {
                 '/health': 'Health check with database connectivity test',
                 '/info': 'This endpoint - proxy information',
-                '/test': 'Test database operations (requires API key)'
+                '/test': 'Test database operations (requires API key)',
+                '/query': 'Execute SQL queries (POST, requires API key)'
             }
         })
 
