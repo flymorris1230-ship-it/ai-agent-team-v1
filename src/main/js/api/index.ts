@@ -18,6 +18,7 @@ import { authRoutes } from './routes/auth';
 import { healthRoutes } from './routes/health';
 import { factoryOsRoutes } from './routes/factory-os';
 import { factoryStatusRoutes } from './routes/factory-status';
+import { factoryStatusLegacyRoutes } from './routes/factory-status-legacy';
 
 // Create Hono app
 const app = new Hono<{ Bindings: Env }>();
@@ -56,7 +57,23 @@ app.get('/', (c) => {
       knowledge: '/api/v1/knowledge',
       health: '/api/v1/health',
       'factory-os': '/api/v1/factory-os', // Genesis Factory OS integration
-      'factory-status': '/api/v1/factory-status', // Factory OS monitoring
+      'factory-status': '/api/v1/factory-status', // Factory OS monitoring (recommended + legacy)
+    },
+    factory_status_endpoints: {
+      recommended: {
+        current: '/api/v1/factory-status/current',
+        history: '/api/v1/factory-status/history?limit=N',
+        stats: '/api/v1/factory-status/stats?hours=N',
+        dashboard: '/api/v1/factory-status/dashboard',
+        check_now: '/api/v1/factory-status/check-now',
+        test_connection: '/api/v1/factory-status/test-connection',
+      },
+      legacy: {
+        status: '/api/v1/factory-status/status',
+        history: '/api/v1/factory-status/status/history',
+        summary: '/api/v1/factory-status/status/summary',
+        detailed: '/api/v1/factory-status/status/detailed',
+      },
     },
     documentation: '/api/v1/docs',
   });
@@ -73,7 +90,8 @@ apiV1.route('/agents', agentRoutes);
 apiV1.route('/knowledge', knowledgeRoutes);
 apiV1.route('/health', healthRoutes);
 apiV1.route('/factory-os', factoryOsRoutes); // Genesis Factory OS integration
-apiV1.route('/factory-status', factoryStatusRoutes); // Factory OS monitoring
+apiV1.route('/factory-status', factoryStatusRoutes); // Factory OS monitoring (recommended)
+apiV1.route('/factory-status', factoryStatusLegacyRoutes); // Factory OS monitoring (legacy compatibility)
 
 app.route('/api/v1', apiV1);
 
