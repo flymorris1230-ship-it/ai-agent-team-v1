@@ -183,8 +183,8 @@ tail -f /var/log/postgres-proxy.log
 3. 選擇你的 Tunnel：`stic-nas` (ID: e41b8baa-f28e-4aef-b4cd-32b3d2bf88f2)
 4. **Public Hostname** → **Add a public hostname**
 
-**配置 1：PostgreSQL Proxy**
-- **Subdomain**: `postgres`
+**配置 1：PostgreSQL AI Agent Proxy**
+- **Subdomain**: `postgres-ai-agent`
 - **Domain**: `shyangtsuen.xyz`
 - **Path**: 留空
 - **Type**: `HTTP`
@@ -192,8 +192,8 @@ tail -f /var/log/postgres-proxy.log
 
 點擊 **Save hostname**
 
-**配置 2：Health Check**
-- **Subdomain**: `health`
+**配置 2：Health Check (可選)**
+- **Subdomain**: `health-ai`
 - **Domain**: `shyangtsuen.xyz`
 - **Path**: 留空
 - **Type**: `HTTP`
@@ -212,8 +212,7 @@ tail -f /var/log/postgres-proxy.log
 sleep 30
 
 # 測試 DNS
-dig postgres.shyangtsuen.xyz +short
-dig health.shyangtsuen.xyz +short
+dig postgres-ai-agent.shyangtsuen.xyz +short
 ```
 
 應該看到 Cloudflare IP（172.67.x.x 或 104.21.x.x）
@@ -222,21 +221,23 @@ dig health.shyangtsuen.xyz +short
 
 ```bash
 # 測試健康檢查（公開，無需 API Key）
-curl https://health.shyangtsuen.xyz
+curl https://postgres-ai-agent.shyangtsuen.xyz/health
 
 # 期望輸出：
 # {
 #   "status": "healthy",
 #   "database": "connected",
+#   "host": "192.168.1.114:5532",
+#   "pgvector": "available",
 #   ...
 # }
 
 # 測試 Proxy 信息
-curl https://postgres.shyangtsuen.xyz/info
+curl https://postgres-ai-agent.shyangtsuen.xyz/info
 
 # 測試數據庫操作（需要 API Key）
 curl -H "X-API-Key: YOUR_API_KEY_HERE" \
-  https://postgres.shyangtsuen.xyz/test
+  https://postgres-ai-agent.shyangtsuen.xyz/test
 ```
 
 ---
@@ -247,7 +248,7 @@ curl -H "X-API-Key: YOUR_API_KEY_HERE" \
 
 ```bash
 # 設定 Proxy URL
-echo "https://postgres.shyangtsuen.xyz" | \
+echo "https://postgres-ai-agent.shyangtsuen.xyz" | \
   npx wrangler secret put POSTGRES_PROXY_URL --env production
 
 # 設定 API Key（使用步驟 3.2 生成的 API Key）
@@ -260,7 +261,7 @@ echo "YOUR_GENERATED_API_KEY" | \
 編輯 `.env`：
 ```bash
 # PostgreSQL Proxy (通過 Cloudflare Tunnel)
-POSTGRES_PROXY_URL=https://postgres.shyangtsuen.xyz
+POSTGRES_PROXY_URL=https://postgres-ai-agent.shyangtsuen.xyz
 POSTGRES_PROXY_API_KEY=YOUR_GENERATED_API_KEY
 ```
 
@@ -289,7 +290,8 @@ npm run deploy:production
                   │ Encrypted Tunnel
                   ↓
 ┌─────────────────────────────────────────────────┐
-│  Cloudflare Tunnel (postgres.shyangtsuen.xyz)  │
+│  Cloudflare Tunnel                             │
+│  postgres-ai-agent.shyangtsuen.xyz             │
 │  Tunnel ID: e41b8baa-f28e-4aef-b4cd-32b3d2bf88f2│
 └─────────────────┬───────────────────────────────┘
                   │ Local HTTP (192.168.1.114)
