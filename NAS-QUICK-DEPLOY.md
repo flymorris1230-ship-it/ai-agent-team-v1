@@ -7,6 +7,24 @@
 
 ---
 
+## ⚠️ **Container Manager 專案功能不可用？**
+
+如果 Container Manager 顯示「無法進行專案」，我們提供了 3 種替代方案：
+
+| 方案 | 難度 | 推薦度 | 說明 |
+|------|------|--------|------|
+| **A. Container Manager 手動創建** | ⭐⭐ 中等 | ⭐⭐⭐⭐⭐ 最推薦 | 使用 UI 手動配置容器 |
+| **B. Task Scheduler** | ⭐ 簡單 | ⭐⭐⭐⭐ 推薦 | 直接運行 Python 腳本 |
+| **C. Docker Compose**（本文） | ⭐⭐⭐ 困難 | ⭐⭐ 備選 | 需要專案功能 |
+
+### 📖 **選擇你的部署方案**
+
+- **已有 Docker 容器使用經驗？** → 使用 [方案 A - Container Manager 手動創建](./NAS-CONTAINER-MANUAL-SETUP.md)
+- **想要最簡單快速部署？** → 使用 [方案 B - Task Scheduler](./NAS-TASKSCHEDULER-SETUP.md)
+- **Container Manager 專案功能可用？** → 繼續閱讀本文（方案 C）
+
+---
+
 ## 📦 **步驟 1：上傳文件到 NAS**
 
 ### 1.1 登入 NAS File Station
