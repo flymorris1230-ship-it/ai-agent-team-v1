@@ -1,0 +1,38 @@
+FROM python:3.11-slim
+
+LABEL maintainer="AI Agent Team"
+LABEL description="PostgreSQL HTTP Proxy for Cloudflare Tunnel"
+
+WORKDIR /app
+
+# Install psycopg2 dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libpq-dev \
+    gcc && \
+    pip install --no-cache-dir psycopg2-binary && \
+    apt-get purge -y --auto-remove gcc && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy proxy script
+COPY nas-postgres-proxy.py .
+
+# Default environment variables (can be overridden)
+ENV POSTGRES_HOST=192.168.1.114
+ENV POSTGRES_PORT=5532
+ENV POSTGRES_DB=postgres
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=Morris
+ENV SERVER_PORT=8000
+ENV PROXY_API_KEY=CHANGE_ME
+
+# Expose HTTP port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+
+# Run proxy
+CMD ["python3", "nas-postgres-proxy.py"]

@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  postgres-http-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.proxy
+    container_name: postgres-http-proxy
+    ports:
+      - "8000:8000"
+    environment:
+      # PostgreSQL 連接設定（匹配你的 pgvector 容器）
+      POSTGRES_HOST: 192.168.1.114
+      POSTGRES_PORT: 5532
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Morris
+
+      # HTTP Server 設定
+      SERVER_PORT: 8000
+
+      # API Key（安全性）
+      # ⚠️ 重要：生產環境務必修改此 API Key
+      PROXY_API_KEY: K6udBL4OmPs3J+hOLkjM6MfSatZQW+vXY1vm/o9y0L0=
+
+    restart: unless-stopped
+
+    networks:
+      - ai-agent-network
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  ai-agent-network:
+    driver: bridge
+
+# 使用方法：
+# 1. 上傳所有文件到 NAS: /volume1/docker/postgres-proxy/
+#    - Dockerfile.proxy → 重命名為 Dockerfile
+#    - docker-compose.proxy.yml → 重命名為 docker-compose.yml
+#    - nas-postgres-proxy.py
+#
+# 2. Container Manager → 專案 → 新增
+# 3. 選擇路徑: /volume1/docker/postgres-proxy
+# 4. 專案名稱: postgres-proxy
+# 5. 點擊建置並啟動
+#
+# 6. 測試: curl http://192.168.1.114:8000/health
