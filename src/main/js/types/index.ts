@@ -22,6 +22,10 @@ export interface Env {
   PREFERRED_PROVIDER?: string;     // 'openai' | 'gemini'
   USE_LLM_ROUTER?: string;         // 'true' | 'false'
 
+  // Factory OS Integration
+  FACTORY_OS_URL?: string;         // Factory OS API base URL
+  FACTORY_OS_API_KEY?: string;     // API key for authentication with Factory OS
+
   // Security
   JWT_SECRET: string;
   NAS_WEBHOOK_URL?: string;

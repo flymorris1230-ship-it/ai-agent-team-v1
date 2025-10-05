@@ -17,6 +17,7 @@ import { knowledgeRoutes } from './routes/knowledge';
 import { authRoutes } from './routes/auth';
 import { healthRoutes } from './routes/health';
 import { factoryOsRoutes } from './routes/factory-os';
+import { factoryStatusRoutes } from './routes/factory-status';
 
 // Create Hono app
 const app = new Hono<{ Bindings: Env }>();
@@ -55,6 +56,7 @@ app.get('/', (c) => {
       knowledge: '/api/v1/knowledge',
       health: '/api/v1/health',
       'factory-os': '/api/v1/factory-os', // Genesis Factory OS integration
+      'factory-status': '/api/v1/factory-status', // Factory OS monitoring
     },
     documentation: '/api/v1/docs',
   });
@@ -71,6 +73,7 @@ apiV1.route('/agents', agentRoutes);
 apiV1.route('/knowledge', knowledgeRoutes);
 apiV1.route('/health', healthRoutes);
 apiV1.route('/factory-os', factoryOsRoutes); // Genesis Factory OS integration
+apiV1.route('/factory-status', factoryStatusRoutes); // Factory OS monitoring
 
 app.route('/api/v1', apiV1);
 

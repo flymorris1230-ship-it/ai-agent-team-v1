@@ -44,7 +44,7 @@ export default {
     }
   },
 
-  async scheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     const logger = new Logger(env, 'ScheduledHandler');
     await logger.info(`Running scheduled event at ${new Date(event.scheduledTime).toISOString()}`);
 
@@ -52,10 +52,19 @@ export default {
     const cronType = event.cron || 'default';
 
     if (cronType.includes('*/5') || cronType === 'default') {
-      // Every 5 minutes: Database sync
-      const { handleScheduledSync } = await import('./core/database-sync');
-      const syncResult = await handleScheduledSync(env);
-      await logger.info('Database sync completed', { syncResult });
+      // Every 5 minutes: Factory OS health check + Database sync
+      // 1. Factory OS health check
+      const { handleScheduled } = await import('../../scheduled');
+      await handleScheduled(event, env, ctx);
+
+      // 2. Database sync
+      try {
+        const { handleScheduledSync } = await import('./core/database-sync');
+        const syncResult = await handleScheduledSync(env);
+        await logger.info('Database sync completed', { syncResult });
+      } catch (error) {
+        await logger.error('Database sync failed', { error });
+      }
     } else if (cronType.includes('*/30')) {
       // Every 30 minutes: Task distribution
       const coordinator = new CoordinatorAgent(env);

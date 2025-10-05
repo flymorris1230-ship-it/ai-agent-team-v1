@@ -264,7 +264,25 @@ CREATE INDEX idx_metrics_name ON performance_metrics(metric_name);
 CREATE INDEX idx_metrics_created_at ON performance_metrics(created_at);
 
 -- ----------------------------------------
--- 14. Insert Default Agents
+-- 14. Factory Health Checks Table
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS factory_health_checks (
+  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  timestamp TEXT NOT NULL,
+  factory_os_status TEXT NOT NULL, -- healthy, degraded, down
+  response_time_ms INTEGER NOT NULL,
+  database_status TEXT NOT NULL, -- connected, error
+  integration_operational INTEGER NOT NULL, -- 0 or 1 (boolean)
+  error_message TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX idx_factory_health_timestamp ON factory_health_checks(timestamp);
+CREATE INDEX idx_factory_health_status ON factory_health_checks(factory_os_status);
+CREATE INDEX idx_factory_health_created_at ON factory_health_checks(created_at);
+
+-- ----------------------------------------
+-- 15. Insert Default Agents
 -- ----------------------------------------
 INSERT OR IGNORE INTO agents (id, name, role, status, capabilities, performance_metrics, created_at, updated_at) VALUES
   ('agent-coordinator', 'Coordinator Agent', 'Team Coordinator', 'idle', '["task_orchestration", "team_management", "risk_assessment"]', '{}', unixepoch(), unixepoch()),
