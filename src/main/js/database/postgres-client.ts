@@ -204,6 +204,7 @@ export class PostgresClient {
 
   /**
    * Search similar chunks (for RAG)
+   * Uses knowledge_vectors table (production table with pgvector)
    */
   async searchChunks(
     queryEmbedding: number[],
@@ -215,17 +216,45 @@ export class PostgresClient {
     similarity: number;
     metadata?: any;
   }>> {
+    // Use knowledge_vectors table (created via pgAdmin4 with pgvector)
     const result = await this.vectorSearch<{
       id: string;
-      document_id: string;
       content: string;
       metadata: string;
-    }>('document_chunks', queryEmbedding, options);
+    }>('knowledge_vectors', queryEmbedding, options);
 
     return result.rows.map(row => ({
       ...row,
+      document_id: row.metadata ? JSON.parse(row.metadata).document_id || row.id : row.id,
       metadata: row.metadata ? JSON.parse(row.metadata) : undefined
     }));
+  }
+
+  /**
+   * Insert knowledge vector (for RAG)
+   * Uses knowledge_vectors table with pgvector
+   */
+  async insertKnowledgeVector(
+    content: string,
+    embedding: number[],
+    metadata?: Record<string, any>
+  ): Promise<string> {
+    const sql = `
+      INSERT INTO knowledge_vectors (
+        id, content, metadata, embedding, created_at, updated_at
+      ) VALUES (
+        gen_random_uuid(), $1, $2::jsonb, $3::vector, NOW(), NOW()
+      )
+      RETURNING id
+    `;
+
+    const result = await this.query<{ id: string }>(sql, [
+      content,
+      JSON.stringify(metadata || {}),
+      `[${embedding.join(',')}]`
+    ]);
+
+    return result.rows[0]?.id || '';
   }
 
   /**

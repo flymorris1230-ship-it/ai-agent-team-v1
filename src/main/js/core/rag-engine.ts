@@ -319,14 +319,18 @@ Instructions:
     try {
       // Use LLM Router if available
       if (this.llmRouter) {
+        // Don't pass model parameter - let each provider use its default model
+        // This prevents cross-provider model errors (e.g., using OpenAI model with Gemini)
         const response = await this.llmRouter.createEmbedding({
           text,
-          model: this.embeddingModel,
+          // model: undefined - let provider choose its default
         });
 
         await this.logger.info('Embedding created via LLM Router', {
           model: response.model,
+          provider: response.provider,
           tokens: response.usage.total_tokens,
+          cost: response.cost,
         });
 
         return response.embedding;
@@ -373,19 +377,23 @@ Instructions:
     try {
       // Use LLM Router if available
       if (this.llmRouter) {
+        // Don't pass model parameter - let each provider use its default model
+        // This prevents cross-provider model errors
         const response = await this.llmRouter.createChatCompletion({
           messages: messages.map((msg) => ({
             role: msg.role as 'system' | 'user' | 'assistant',
             content: msg.content,
           })),
-          model: this.chatModel,
+          // model: undefined - let provider choose its default
           temperature: 0.7,
           max_tokens: 1000,
         });
 
         await this.logger.info('Chat completion via LLM Router', {
           model: response.model,
+          provider: response.provider,
           tokens: response.usage.total_tokens,
+          cost: response.cost,
         });
 
         return response;
