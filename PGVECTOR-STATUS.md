@@ -272,7 +272,57 @@ LIMIT 10;
 
 ---
 
+## 🎯 **pgAdmin4 配置確認（2025-10-05 更新）**
+
+### ✅ **容器配置詳情**
+
+**pgAdmin4 容器狀態**:
+- **訪問地址**: https://postgres.shyangtsuen.xyz (通過 Cloudflare Tunnel)
+- **登入帳號**: flycan1230@hotmail.com
+- **登入密碼**: Morris1230
+- **儲存空間**:
+  - `/docker/pgadmin4` → `/docker/pgadmin4`
+  - `/docker/pgadmin4` → `/docker/pgadmin4/data`
+- **當前連接**: stic-postgres-n8n (n8n 工作流資料庫)
+
+### 📊 **PostgreSQL 管理概覽**
+
+**pgAdmin4 管理的資料庫**:
+
+1. **stic-postgres-n8n** (原有)
+   - 用途: n8n 工作流自動化
+   - 連接: 容器內部連接
+   - 狀態: ✅ 運行正常
+
+2. **NAS PostgreSQL pgvector** (待添加)
+   - 用途: AI Agent 向量資料庫
+   - 連接: 192.168.1.114:5532
+   - 容器: claudecodepgvector
+   - 鏡像: pgvector/pgvector:pg16
+   - 狀態: ✅ 運行正常，pgvector 可用
+
+### 🚀 **推薦安裝方案（已確認可行）**
+
+**方案：使用 pgAdmin4 GUI 安裝 pgvector**
+
+**優勢**:
+- ✅ 無需更新 Proxy（避免網絡連接問題）
+- ✅ 圖形化界面，簡單直觀
+- ✅ 容器已配置完成，立即可用
+- ✅ 可同時管理兩個 PostgreSQL
+
+**步驟**:
+1. 登入 pgAdmin4: https://postgres.shyangtsuen.xyz
+2. 添加新 Server 連接 (192.168.1.114:5532)
+3. 打開 Query Tool
+4. 執行 `CREATE EXTENSION vector`
+5. 驗證安裝並測試
+
+**詳細指南**: 查看 `PGADMIN4-PGVECTOR-GUIDE.md`
+
+---
+
 **下一步**:
-1. 解決 Mac 到 NAS 的網絡連接問題
-2. 手動更新 NAS Proxy（如果網絡恢復失敗）
-3. 執行 pgvector 驗證測試
+1. ✅ 使用 pgAdmin4 安裝 pgvector (推薦)
+2. 驗證 pgvector 功能
+3. 整合到 RAG 系統
