@@ -1,0 +1,278 @@
+# 🧮 pgvector 安裝狀態報告
+
+**更新時間**: 2025-10-05
+**狀態**: 🟡 待驗證
+
+---
+
+## ✅ 已完成的工作
+
+### 1. 文檔創建
+- ✅ `PGVECTOR-INSTALLATION.md` - 完整的 pgvector 安裝指南
+- ✅ `PROXY-UPDATE-GUIDE.md` - Proxy 更新部署指南
+- ✅ `PGVECTOR-STATUS.md` (本文件) - 當前狀態總結
+
+### 2. 代碼更新
+- ✅ `nas-postgres-proxy.py` - 添加 `/query` 端點
+  - 支持執行自定義 SQL 查詢
+  - 支持 SELECT 和 INSERT/UPDATE/DELETE
+  - 完整的錯誤處理和事務管理
+  - API Key 認證保護
+
+### 3. 自動化腳本
+- ✅ `scripts/test-pgvector.sh` - 完整的 pgvector 測試流程
+  - 檢查擴展狀態
+  - 創建擴展
+  - 創建測試表
+  - 插入測試數據
+  - 測試相似度搜索（Cosine, L2, Inner Product）
+  - 可選清理
+
+- ✅ `scripts/deploy-proxy-update.sh` - Proxy 自動部署腳本
+
+### 4. Git 版本控制
+- ✅ 所有更改已提交到 Git
+- ✅ 所有更改已推送到 GitHub
+- ✅ 提交記錄:
+  - `75f7637` - Add pgvector installation guide
+  - `b0d866e` - Add /query endpoint to PostgreSQL HTTP Proxy
+  - `ba91ced` - Add pgvector testing script and Proxy update guide
+
+---
+
+## 🔍 當前狀態檢查
+
+### Cloudflare Tunnel 狀態
+```bash
+curl -s https://postgres-ai-agent.shyangtsuen.xyz/health | python3 -m json.tool
+```
+
+**最近一次檢查結果**:
+```json
+{
+    "status": "healthy",
+    "database": "connected",
+    "host": "192.168.1.114:5532",
+    "version": "PostgreSQL 16.10 ...",
+    "pgvector": "available",  ← ✅ 顯示為可用！
+    "response_time_ms": 1.34,
+    "timestamp": "2025-10-05T06:54:16.056314"
+}
+```
+
+### 重要發現
+🎯 **pgvector 顯示為 "available"**
+
+這意味著：
+1. **可能性 A**: pgvector 擴展已經在容器鏡像中預裝
+   - 使用的鏡像: `pgvector/pgvector:pg16`
+   - 該鏡像通常包含預裝的 pgvector 擴展
+
+2. **可能性 B**: pgvector 需要啟用但尚未創建擴展
+   - Extension 存在但未執行 `CREATE EXTENSION vector`
+
+---
+
+## ⚠️ 待解決問題
+
+### 問題 1: Mac 無法連接到 NAS
+
+**症狀**:
+```bash
+$ ping 192.168.1.114
+100.0% packet loss
+
+$ ssh admin@192.168.1.114
+Connection timeout
+```
+
+**可能原因**:
+- Mac 和 NAS 不在同一網絡
+- 本地網絡連接問題
+- NAS SSH 服務未啟動
+
+**影響**:
+- 無法通過 SCP/SSH 自動部署 Proxy 更新
+- 需要手動在 NAS 上更新 Proxy
+
+**解決方案**: 見下方「手動更新步驟」
+
+### 問題 2: Proxy 版本未更新
+
+**當前狀態**:
+- GitHub 上的 Proxy 已包含 `/query` 端點
+- NAS 上運行的 Proxy 可能是舊版本（沒有 `/query` 端點）
+
+**驗證方法**:
+```bash
+curl -s https://postgres-ai-agent.shyangtsuen.xyz/info | python3 -m json.tool
+```
+
+查看 `endpoints` 是否包含 `/query`。
+
+---
+
+## 🎯 下一步操作
+
+### 選項 A: 手動更新 NAS Proxy（推薦）
+
+**需要在 NAS 上執行**:
+
+```bash
+# 1. SSH 到 NAS（需要在 NAS 本地執行或從能連接的機器）
+ssh admin@192.168.1.114
+# 密碼: Morris1230
+
+# 2. 停止舊 Proxy
+cd /volume1/docker/ai-agent-backup
+pkill -f nas-postgres-proxy.py
+
+# 3. 下載最新版本
+curl -O https://raw.githubusercontent.com/flymorris1230-ship-it/ai-agent-team-v1/main/nas-postgres-proxy.py
+
+# 4. 重啟 Proxy
+nohup python3 nas-postgres-proxy.py > proxy.log 2>&1 &
+
+# 5. 檢查日誌
+tail -15 proxy.log
+
+# 6. 退出
+exit
+```
+
+### 選項 B: 通過 pgAdmin 手動安裝（如果 Proxy 更新失敗）
+
+**步驟** (參考 `PGVECTOR-INSTALLATION.md`):
+
+1. 訪問 pgAdmin: http://192.168.1.114:8080
+2. 連接到 PostgreSQL (192.168.1.114:5532)
+3. 執行 SQL:
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
+   ```
+4. 驗證:
+   ```sql
+   SELECT extname, extversion FROM pg_extension WHERE extname = 'vector';
+   ```
+
+### 選項 C: 等待網絡恢復後自動部署
+
+```bash
+# 當 Mac 可以連接到 NAS 後執行
+./scripts/deploy-proxy-update.sh
+```
+
+---
+
+## ✅ 驗證 pgvector 安裝
+
+### 方法 1: 通過更新後的 Proxy（推薦）
+
+**更新 Proxy 後執行**:
+```bash
+./scripts/test-pgvector.sh
+```
+
+這個腳本會自動：
+- ✅ 檢查 pgvector 擴展
+- ✅ 創建擴展（如果需要）
+- ✅ 測試向量操作
+- ✅ 驗證所有距離度量
+
+### 方法 2: 通過 pgAdmin
+
+1. 打開 http://192.168.1.114:8080
+2. 連接到數據庫
+3. 執行測試 SQL（見 `PGVECTOR-INSTALLATION.md`）
+
+### 方法 3: 直接通過 PostgreSQL（如果 psql 可用）
+
+```bash
+PGPASSWORD=Morris1230 psql -h 192.168.1.114 -p 5532 -U postgres -d postgres \
+  -c "SELECT * FROM pg_extension WHERE extname = 'vector';"
+```
+
+---
+
+## 📊 預期結果
+
+### pgvector 擴展已安裝
+
+```sql
+extname | extversion
+--------|------------
+vector  | 0.7.x
+```
+
+### 向量操作測試成功
+
+```sql
+-- 創建測試表
+CREATE TABLE vector_test (
+    id SERIAL PRIMARY KEY,
+    content TEXT,
+    embedding vector(1536)
+);
+
+-- 相似度搜索
+SELECT id, content,
+  embedding <=> query_vector AS distance
+FROM vector_test
+ORDER BY distance
+LIMIT 10;
+```
+
+---
+
+## 🎯 完成檢查清單
+
+- [ ] Mac 網絡連接恢復（可以 ping 192.168.1.114）
+- [ ] NAS Proxy 已更新到包含 `/query` 端點的版本
+- [ ] `/query` 端點可以正常執行 SQL
+- [ ] pgvector 擴展已創建 (`CREATE EXTENSION vector`)
+- [ ] pgvector 擴展已驗證 (`SELECT * FROM pg_extension WHERE extname = 'vector'`)
+- [ ] 向量操作測試通過（相似度搜索）
+- [ ] 測試數據已清理
+
+---
+
+## 📚 參考文檔
+
+- `PGVECTOR-INSTALLATION.md` - 安裝指南
+- `PROXY-UPDATE-GUIDE.md` - Proxy 更新指南
+- `scripts/test-pgvector.sh` - 自動化測試腳本
+- GitHub pgvector: https://github.com/pgvector/pgvector
+
+---
+
+## 🆘 需要幫助？
+
+### 如果 Proxy 更新後仍然無法使用 /query
+
+1. 檢查 NAS 上的 Proxy 日誌:
+   ```bash
+   ssh admin@192.168.1.114
+   tail -50 /volume1/docker/ai-agent-backup/proxy.log
+   ```
+
+2. 檢查 Proxy 進程:
+   ```bash
+   ps aux | grep nas-postgres-proxy.py
+   ```
+
+3. 手動重啟:
+   ```bash
+   pkill -f nas-postgres-proxy.py
+   nohup python3 /volume1/docker/ai-agent-backup/nas-postgres-proxy.py > proxy.log 2>&1 &
+   ```
+
+### 如果 pgvector 創建失敗
+
+參考 `PGVECTOR-INSTALLATION.md` 的故障排除章節。
+
+---
+
+**下一步**:
+1. 解決 Mac 到 NAS 的網絡連接問題
+2. 手動更新 NAS Proxy（如果網絡恢復失敗）
+3. 執行 pgvector 驗證測試

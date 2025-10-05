@@ -10,7 +10,9 @@ set -e
 
 # Load environment variables
 if [ -f .env ]; then
-    export $(cat .env | grep -v '^#' | xargs)
+    set -a
+    source <(cat .env | grep -v '^#' | grep -v '^$' | grep '=' | sed 's/#.*$//')
+    set +a
 fi
 
 PROXY_URL="${POSTGRES_PROXY_URL:-https://postgres-ai-agent.shyangtsuen.xyz}"
