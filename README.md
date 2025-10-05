@@ -182,11 +182,23 @@ wrangler r2 bucket create ai-agent-files
 
 ## 📚 文檔
 
-- **[AI Agent 配置](./ai_agent_team_config.txt)** - 完整的 Agent 團隊配置
+### 核心文檔
 - **[開發規則](./CLAUDE.md)** - Claude Code 開發指南
-- **[API 文檔](./docs/api/)** - API 參考文檔
-- **[用戶指南](./docs/user/)** - 使用說明
-- **[開發者文檔](./docs/dev/)** - 架構和設計文檔
+- **[AI Agent 配置](./ai_agent_team_config.txt)** - 完整的 Agent 團隊配置
+- **[專案繼續指南](./PROJECT-CONTINUATION.md)** - 快速繼續開發
+
+### 詳細文檔 → [docs/](./docs/)
+- **[核心指南](./docs/guides/)** - 會話設定、狀態追蹤、下一步
+- **[Cloudflare](./docs/cloudflare/)** - Workers、Tunnel 設定與診斷
+- **[NAS 部署](./docs/nas/)** - 容器設定、Proxy 部署、排程設定
+- **[pgvector](./docs/pgvector/)** - 向量資料庫安裝與配置
+- **[部署指南](./docs/deployment/)** - 生產環境部署與成本分析
+- **[測試報告](./docs/reports/)** - 生產測試結果
+
+### 配置文件 → [config/](./config/)
+- **[Docker](./config/docker/)** - Docker Compose 和 Dockerfile
+- **[Proxy](./config/proxy/)** - PostgreSQL HTTP Proxy 配置
+- **[範例](./config/examples/)** - 環境變數範本
 
 ## 🔒 安全
 

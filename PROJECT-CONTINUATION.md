@@ -7,9 +7,9 @@
 ## 📌 專案當前狀態
 
 **專案名稱**: AI Agent Team v1
-**架構版本**: v2.2 (Hybrid + Multi-LLM + Testing + Cloudflare Paid)
-**最後更新**: 2025-10-04
-**當前階段**: ✅ Cloudflare 付費功能已啟用，進入部署和成本監控階段
+**架構版本**: v2.3 (Hybrid + Multi-LLM + Testing + Cloudflare Paid + pgvector)
+**最後更新**: 2025-10-05
+**當前階段**: ✅ pgvector 安裝完成，進入 RAG 系統整合階段
 **預估成本**: $5-50/月 (視使用量而定)
 
 ---
@@ -69,6 +69,27 @@
   - [x] 功能驗證清單
   - [x] 故障排除指南
   - [x] 成本監控方案
+
+### Phase 6: pgvector 向量資料庫安裝 ✅
+- [x] 使用 pgAdmin4 GUI 安裝 pgvector
+  - [x] 登入 pgAdmin4 (https://postgres.shyangtsuen.xyz)
+  - [x] 添加 NAS PostgreSQL Server 連接 (192.168.1.114:5532)
+  - [x] 執行 `CREATE EXTENSION vector`
+- [x] 創建生產環境向量表 `knowledge_vectors`
+  - [x] UUID 主鍵 + 1536 維向量
+  - [x] JSONB metadata 欄位
+  - [x] 時間戳記欄位
+- [x] 創建高效能索引
+  - [x] ivfflat 向量索引 (100 lists, cosine similarity)
+  - [x] GIN 索引 (metadata JSONB 查詢)
+  - [x] B-tree 索引 (created_at 時間排序)
+- [x] 測試向量操作
+  - [x] Cosine 距離測試通過
+  - [x] L2 距離測試通過
+  - [x] Inner Product 測試通過
+- [x] 更新文檔
+  - [x] 更新 `docs/pgvector/STATUS.md` (標記為完成)
+  - [x] 清理測試數據
 
 ---
 
@@ -217,10 +238,21 @@ npx wrangler tail
 - `package.json` - 依賴和腳本
 
 ### 文檔
-- `COST-ANALYSIS.md` - 成本分析報告
-- `docs/multi-llm-guide.md` - Multi-LLM 使用指南
 - `CLAUDE.md` - 開發規範
 - `README.md` - 專案介紹
+- `PROJECT-CONTINUATION.md` - 本指南 (快速繼續)
+- `docs/` - **完整文檔目錄** (已重新整理)
+  - `docs/guides/` - 核心指南 (SESSION-SETUP, SESSION-STATUS, NEXT-STEPS)
+  - `docs/cloudflare/` - Cloudflare 設定與診斷
+  - `docs/nas/` - NAS 部署文檔
+  - `docs/pgvector/` - pgvector 安裝指南
+  - `docs/deployment/` - 部署指南 (包含 COST-ANALYSIS.md)
+  - `docs/reports/` - 測試報告
+- `docs/multi-llm-guide.md` - Multi-LLM 使用指南
+- `config/` - 配置文件目錄
+  - `config/docker/` - Docker Compose 和 Dockerfile
+  - `config/proxy/` - PostgreSQL HTTP Proxy 配置
+  - `config/examples/` - 環境變數範本
 
 ### 測試
 - `src/main/js/__tests__/` - 測試檔案目錄
