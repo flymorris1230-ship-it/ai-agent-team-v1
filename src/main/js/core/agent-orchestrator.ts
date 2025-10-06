@@ -3,7 +3,7 @@
  * Coordinates agent interactions and workflow execution
  */
 
-import type { Env, Task, AgentId, Agent } from '../types';
+import type { Env, Task, AgentId, Agent, TaskMetadata, TaskType } from '../types';
 import { Logger } from '../utils/logger';
 import { AgentCommunicationSystem } from './agent-communication';
 import { TaskQueueManager } from './task-queue';
@@ -435,6 +435,181 @@ export class AgentOrchestrator {
       reassigned_tasks: reassignedCount,
       agent_loads: agentLoads as Record<AgentId, number>,
     };
+  }
+
+  /**
+   * Annotate task with metadata for intelligent LLM routing
+   * Automatically analyzes task and assigns complexity, context size, and priority dimension
+   */
+  async annotateTaskMetadata(task: Task): Promise<TaskMetadata> {
+    await this.logger.info('Annotating task metadata', { taskId: task.id, taskType: task.type });
+
+    // Analyze task complexity based on type and description
+    const complexity = this.estimateTaskComplexity(task);
+
+    // Estimate required context size
+    const requiredContextKb = this.estimateRequiredContext(task);
+
+    // Determine priority dimension based on task attributes
+    const priorityDimension = this.determinePriorityDimension(task);
+
+    // Estimate token count
+    const estimatedTokens = this.estimateTokenCount(task);
+
+    // Check if vision or function calling is required
+    const requiresVision = this.checkRequiresVision(task);
+    const requiresFunctionCalling = this.checkRequiresFunctionCalling(task);
+
+    const metadata: TaskMetadata = {
+      complexity,
+      required_context_kb: requiredContextKb,
+      priority_dimension: priorityDimension,
+      estimated_tokens: estimatedTokens,
+      requires_vision: requiresVision,
+      requires_function_calling: requiresFunctionCalling,
+    };
+
+    await this.logger.info('Task metadata annotated', { taskId: task.id, metadata });
+
+    return metadata;
+  }
+
+  /**
+   * Estimate task complexity based on type and description
+   */
+  private estimateTaskComplexity(task: Task): 'simple' | 'medium' | 'complex' {
+    const descriptionLength = (task.description || '').length;
+    const inputDataSize = task.input_data ? JSON.stringify(task.input_data).length : 0;
+
+    // Complex task types
+    const complexTaskTypes: TaskType[] = [
+      'design_architecture',
+      'implement_feature',
+      'security_review',
+      'compliance_check',
+    ];
+
+    // Medium task types
+    const mediumTaskTypes: TaskType[] = [
+      'write_prd',
+      'design_ui_ux',
+      'create_prototype',
+      'write_tests',
+      'estimate_cost',
+      'vulnerability_scan',
+    ];
+
+    if (complexTaskTypes.includes(task.type)) {
+      return 'complex';
+    }
+
+    if (mediumTaskTypes.includes(task.type)) {
+      return descriptionLength > 500 || inputDataSize > 1000 ? 'complex' : 'medium';
+    }
+
+    // Simple task types or short descriptions
+    if (descriptionLength < 200 && inputDataSize < 500) {
+      return 'simple';
+    }
+
+    return 'medium';
+  }
+
+  /**
+   * Estimate required context size in KB
+   */
+  private estimateRequiredContext(task: Task): number {
+    const baseContext = 5; // 5KB minimum
+
+    // Task types that need large context
+    const largeContextTasks: TaskType[] = [
+      'design_architecture',
+      'implement_feature',
+      'security_review',
+      'design_review',
+    ];
+
+    if (largeContextTasks.includes(task.type)) {
+      return 50; // 50KB for complex tasks
+    }
+
+    // Check if input data references large documents
+    if (task.input_data) {
+      const inputSize = JSON.stringify(task.input_data).length;
+      return Math.min(baseContext + Math.ceil(inputSize / 1024), 100); // Cap at 100KB
+    }
+
+    return baseContext;
+  }
+
+  /**
+   * Determine priority dimension based on task attributes
+   */
+  private determinePriorityDimension(task: Task): 'speed' | 'quality' | 'cost' | 'balanced' {
+    // High priority tasks favor speed
+    if (task.priority === 'critical' || task.priority === 'high') {
+      return 'speed';
+    }
+
+    // Security and compliance tasks favor quality
+    const qualityTasks: TaskType[] = [
+      'security_review',
+      'compliance_check',
+      'vulnerability_scan',
+      'design_review',
+    ];
+
+    if (qualityTasks.includes(task.type)) {
+      return 'quality';
+    }
+
+    // Cost estimation and optimization tasks favor cost
+    const costTasks: TaskType[] = ['estimate_cost', 'optimize_resources', 'cost_alert'];
+
+    if (costTasks.includes(task.type)) {
+      return 'cost';
+    }
+
+    // Default to balanced
+    return 'balanced';
+  }
+
+  /**
+   * Estimate token count for task processing
+   */
+  private estimateTokenCount(task: Task): number {
+    const descriptionTokens = Math.ceil((task.description || '').length / 4); // ~4 chars per token
+    const inputDataTokens = task.input_data
+      ? Math.ceil(JSON.stringify(task.input_data).length / 4)
+      : 0;
+    const outputEstimate = 500; // Estimated output tokens
+
+    return descriptionTokens + inputDataTokens + outputEstimate;
+  }
+
+  /**
+   * Check if task requires vision capabilities
+   */
+  private checkRequiresVision(task: Task): boolean {
+    const visionKeywords = ['image', 'screenshot', 'diagram', 'visual', 'ui', 'design'];
+    const description = (task.description || '').toLowerCase();
+
+    return visionKeywords.some((keyword) => description.includes(keyword));
+  }
+
+  /**
+   * Check if task requires function calling
+   */
+  private checkRequiresFunctionCalling(task: Task): boolean {
+    const functionCallingTasks: TaskType[] = [
+      'develop_api',
+      'implement_feature',
+      'write_tests',
+      'deploy',
+      'analyze_data',
+    ];
+
+    return functionCallingTasks.includes(task.type);
   }
 
   /**
