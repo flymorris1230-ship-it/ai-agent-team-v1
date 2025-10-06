@@ -89,7 +89,19 @@ export class LLMRouter {
     const result = await this.env.DB.prepare('SELECT * FROM llm_capabilities').all();
 
     for (const row of result.results) {
-      const capability = row as unknown as LLMCapability;
+      const rawCapability = row as any;
+
+      // Parse JSON fields from database
+      const capability: LLMCapability = {
+        ...rawCapability,
+        strengths: typeof rawCapability.strengths === 'string'
+          ? JSON.parse(rawCapability.strengths)
+          : rawCapability.strengths,
+        suitable_for: typeof rawCapability.suitable_for === 'string'
+          ? JSON.parse(rawCapability.suitable_for)
+          : rawCapability.suitable_for,
+      };
+
       this.llmCapabilities.set(capability.id, capability);
     }
 

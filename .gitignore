@@ -97,3 +97,4 @@ secrets/
 # Local backups and configs
 .backup-local/
 .claude/
+coverage/

@@ -628,7 +628,10 @@ export class AgentOrchestrator {
       : 0;
     const outputEstimate = 500; // Estimated output tokens
 
-    return descriptionTokens + inputDataTokens + outputEstimate;
+    const totalTokens = descriptionTokens + inputDataTokens + outputEstimate;
+
+    // Cap at 100k tokens maximum
+    return Math.min(totalTokens, 100000);
   }
 
   /**
