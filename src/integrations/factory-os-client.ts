@@ -114,7 +114,7 @@ export class FactoryOSClient {
         throw new Error(`Factory OS API error: ${response.status} ${response.statusText}`)
       }
 
-      const data = await response.json() as any
+      const data = await response.json()
 
       // Handle tRPC response format: { result: { data: { json: {...} } } }
       if (data.result && data.result.data && data.result.data.json) {
