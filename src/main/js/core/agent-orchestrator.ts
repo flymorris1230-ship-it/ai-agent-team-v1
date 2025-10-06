@@ -178,6 +178,7 @@ export class AgentOrchestrator {
 
   /**
    * Create a standard feature development workflow
+   * Enhanced with Phase 1 agents: UI/UX Designer, FinOps Guardian, Security Guardian
    */
   async createFeatureWorkflow(featureDescription: string): Promise<Workflow> {
     const workflowId = `workflow-${Date.now()}`;
@@ -188,6 +189,7 @@ export class AgentOrchestrator {
       description: featureDescription,
       status: 'pending',
       steps: [
+        // Step 1: PRD + Cost Estimation (Parallel)
         {
           step_number: 1,
           agent_id: 'agent-pm',
@@ -195,40 +197,82 @@ export class AgentOrchestrator {
         },
         {
           step_number: 2,
+          agent_id: 'agent-finops-guardian',
+          task_type: 'estimate_cost',
+          parallel_with: [1],
+        },
+        // Step 2: Architecture Design
+        {
+          step_number: 3,
           agent_id: 'agent-architect',
           task_type: 'design_architecture',
           depends_on: [1],
         },
-        {
-          step_number: 3,
-          agent_id: 'agent-backend-dev',
-          task_type: 'implement_feature',
-          depends_on: [2],
-        },
+        // Step 3: UI/UX Design + Security Review (Parallel with Architecture)
         {
           step_number: 4,
-          agent_id: 'agent-frontend-dev',
-          task_type: 'implement_feature',
-          depends_on: [2],
+          agent_id: 'agent-ui-ux-designer',
+          task_type: 'design_ui_ux',
+          depends_on: [1],
           parallel_with: [3],
         },
         {
           step_number: 5,
-          agent_id: 'agent-qa',
-          task_type: 'write_tests',
-          depends_on: [3, 4],
+          agent_id: 'agent-security-guardian',
+          task_type: 'security_review',
+          depends_on: [3],
         },
+        // Step 4: Implementation (Backend + Frontend parallel)
         {
           step_number: 6,
+          agent_id: 'agent-backend-dev',
+          task_type: 'implement_feature',
+          depends_on: [3, 5], // Depends on architecture + security approval
+        },
+        {
+          step_number: 7,
+          agent_id: 'agent-frontend-dev',
+          task_type: 'implement_feature',
+          depends_on: [4], // Depends on UI/UX design
+          parallel_with: [6],
+        },
+        // Step 5: QA Testing
+        {
+          step_number: 8,
+          agent_id: 'agent-qa',
+          task_type: 'write_tests',
+          depends_on: [6, 7],
+        },
+        // Step 6: Final Security Scan + Resource Optimization
+        {
+          step_number: 9,
+          agent_id: 'agent-security-guardian',
+          task_type: 'vulnerability_scan',
+          depends_on: [8],
+        },
+        {
+          step_number: 10,
+          agent_id: 'agent-finops-guardian',
+          task_type: 'optimize_resources',
+          depends_on: [8],
+          parallel_with: [9],
+        },
+        // Step 7: Deployment
+        {
+          step_number: 11,
           agent_id: 'agent-devops',
           task_type: 'deploy',
-          depends_on: [5],
+          depends_on: [9, 10], // Deploy after security + cost checks
         },
       ],
       created_at: Date.now(),
     };
 
-    await this.logger.info('Feature workflow created', { workflowId, featureDescription });
+    await this.logger.info('Enhanced feature workflow created with Phase 1 agents', {
+      workflowId,
+      featureDescription,
+      totalSteps: workflow.steps.length,
+    });
 
     return workflow;
   }
@@ -619,14 +663,23 @@ export class AgentOrchestrator {
     agentLoads: Record<string, number>,
     taskType: string
   ): AgentId | null {
-    // Map task types to capable agents
+    // Map task types to capable agents (Updated with Phase 1 agents)
     const capableAgents: Record<string, AgentId[]> = {
       write_prd: ['agent-pm'],
       design_architecture: ['agent-architect'],
+      design_ui_ux: ['agent-ui-ux-designer'],
+      create_prototype: ['agent-ui-ux-designer'],
+      design_review: ['agent-ui-ux-designer'],
       implement_feature: ['agent-backend-dev', 'agent-frontend-dev'],
       develop_api: ['agent-backend-dev'],
       write_tests: ['agent-qa'],
       deploy: ['agent-devops'],
+      estimate_cost: ['agent-finops-guardian'],
+      optimize_resources: ['agent-finops-guardian'],
+      cost_alert: ['agent-finops-guardian'],
+      security_review: ['agent-security-guardian'],
+      vulnerability_scan: ['agent-security-guardian'],
+      compliance_check: ['agent-security-guardian'],
       analyze_data: ['agent-data-analyst'],
       manage_knowledge: ['agent-knowledge-mgr'],
     };
