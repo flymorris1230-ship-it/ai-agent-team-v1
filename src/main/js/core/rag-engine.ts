@@ -57,13 +57,16 @@ export class RAGEngine {
     this.db = createUnifiedDatabase(env);
 
     this.config = {
-      embeddingModel: config?.embeddingModel || 'text-embedding-3-small',
+      // When using LLM Router, let it choose the embedding model based on strategy
+      // 'cost' mode: use Gemini (text-embedding-004, free)
+      // 'performance' mode: use OpenAI (text-embedding-3-small, paid)
+      embeddingModel: config?.embeddingModel || 'auto', // 'auto' lets LLM Router decide
       chatModel: config?.chatModel || 'gpt-4o-mini',
       chunkSize: config?.chunkSize || 1000,
       chunkOverlap: config?.chunkOverlap || 200,
       usePostgresVector: config?.usePostgresVector ?? false,
       hybridSearch: config?.hybridSearch ?? false,
-      llmStrategy: config?.llmStrategy || 'balanced',
+      llmStrategy: config?.llmStrategy || 'cost', // Default: cost mode (use Gemini free)
       preferredProvider: config?.preferredProvider,
       useLLMRouter: config?.useLLMRouter ?? true, // Default: use intelligent routing
     };

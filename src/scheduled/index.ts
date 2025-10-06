@@ -89,13 +89,95 @@ async function cleanupOldLogs(env: Env): Promise<void> {
 }
 */
 
-/*
- * 同步向量數據（示例 - 暫時註釋掉）
- *
+/**
+ * Sync vector data from D1 to PostgreSQL pgvector
+ * Ensures vector embeddings are backed up and available for hybrid search
+ */
 async function syncVectorData(env: Env): Promise<void> {
-  console.log('[Cron] Syncing vector data...')
+  console.log('[Cron] ⏳ Starting vector data synchronization...')
 
-  // TODO: 實現向量數據同步邏輯
-  // 例如：將 Vectorize 數據備份到 R2
+  try {
+    // Get all knowledge entries from D1
+    const result = await env.DB.prepare(`
+      SELECT id, type, title, content, tags, related_tasks, author_agent_id, created_at, updated_at
+      FROM knowledge_base
+      ORDER BY updated_at DESC
+      LIMIT 100
+    `).all()
+
+    if (!result.results || result.results.length === 0) {
+      console.log('[Cron] No knowledge entries to sync')
+      return
+    }
+
+    console.log(`[Cron] Found ${result.results.length} knowledge entries to sync`)
+
+    // Initialize RAG Engine for embedding generation
+    const { RAGEngine } = await import('../main/js/core/rag-engine')
+    const ragEngine = new RAGEngine(env, {
+      llmStrategy: 'cost', // Use Gemini free embeddings
+      usePostgresVector: true,
+    })
+
+    let syncedCount = 0
+    let errorCount = 0
+
+    for (const entry of result.results) {
+      try {
+        // Create embedding for the content
+        const embedding = await ragEngine.createEmbedding(entry.content as string)
+
+        // Store in PostgreSQL knowledge_vectors table via HTTP Proxy
+        // Note: This requires PostgreSQL HTTP Proxy to be running
+        const proxyUrl = env.POSTGRES_PROXY_URL || 'http://192.168.1.114:8000'
+
+        const response = await fetch(`${proxyUrl}/query`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': env.POSTGRES_PROXY_API_KEY || 'your-secure-api-key-here',
+          },
+          body: JSON.stringify({
+            sql: `
+              INSERT INTO knowledge_vectors (id, content, metadata, embedding, created_at, updated_at)
+              VALUES ($1, $2, $3::jsonb, $4::vector, $5, $6)
+              ON CONFLICT (id) DO UPDATE SET
+                content = EXCLUDED.content,
+                metadata = EXCLUDED.metadata,
+                embedding = EXCLUDED.embedding,
+                updated_at = EXCLUDED.updated_at
+            `,
+            params: [
+              entry.id,
+              entry.content,
+              JSON.stringify({
+                title: entry.title,
+                type: entry.type,
+                tags: entry.tags,
+                author: entry.author_agent_id,
+              }),
+              `[${embedding.join(',')}]`,
+              entry.created_at,
+              entry.updated_at,
+            ],
+          }),
+        })
+
+        if (response.ok) {
+          syncedCount++
+          console.log(`[Cron] ✅ Synced: ${entry.id} (${entry.title})`)
+        } else {
+          errorCount++
+          console.error(`[Cron] ❌ Failed to sync: ${entry.id}`, await response.text())
+        }
+      } catch (error) {
+        errorCount++
+        console.error(`[Cron] ❌ Error syncing ${entry.id}:`, error)
+      }
+    }
+
+    console.log(`[Cron] ✅ Vector sync completed: ${syncedCount} synced, ${errorCount} errors`)
+  } catch (error) {
+    console.error('[Cron] ❌ Vector sync failed:', error)
+  }
 }
-*/

@@ -137,7 +137,7 @@ factoryStatusLegacyRoutes.get('/status/summary', async (c) => {
     const totalChecks = results.reduce((sum: number, row: any) => sum + row.count, 0)
 
     // 計算 uptime
-    const healthyChecks = results.find((row: any) => row.factory_os_status === 'healthy')?.count || 0
+    const healthyChecks = Number(results.find((row: any) => row.factory_os_status === 'healthy')?.count || 0)
     const uptimePercentage = totalChecks > 0 ? (healthyChecks / totalChecks) * 100 : 0
 
     return c.json({

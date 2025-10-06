@@ -42,10 +42,13 @@ export type AgentId =
   | 'agent-coordinator'
   | 'agent-pm'
   | 'agent-architect'
+  | 'agent-ui-ux-designer'
   | 'agent-backend-dev'
   | 'agent-frontend-dev'
   | 'agent-qa'
   | 'agent-devops'
+  | 'agent-finops-guardian'
+  | 'agent-security-guardian'
   | 'agent-data-analyst'
   | 'agent-knowledge-mgr';
 
@@ -79,9 +82,18 @@ export type TaskType =
   | 'develop_api'
   | 'write_prd'
   | 'design_architecture'
+  | 'design_ui_ux'
+  | 'create_prototype'
+  | 'design_review'
   | 'implement_feature'
   | 'write_tests'
   | 'deploy'
+  | 'estimate_cost'
+  | 'optimize_resources'
+  | 'cost_alert'
+  | 'security_review'
+  | 'vulnerability_scan'
+  | 'compliance_check'
   | 'analyze_data'
   | 'manage_knowledge'
   | 'coordinate';
@@ -89,6 +101,18 @@ export type TaskType =
 export type TaskStatus = 'pending' | 'assigned' | 'in_progress' | 'completed' | 'failed';
 
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
+
+export type TaskComplexity = 'simple' | 'medium' | 'complex';
+export type PriorityDimension = 'speed' | 'quality' | 'cost' | 'balanced';
+
+export interface TaskMetadata {
+  complexity: TaskComplexity;
+  required_context_kb: number;
+  priority_dimension: PriorityDimension;
+  estimated_tokens?: number;
+  requires_vision?: boolean;
+  requires_function_calling?: boolean;
+}
 
 export interface Task {
   id: string;
@@ -103,6 +127,7 @@ export interface Task {
   input_data?: Record<string, unknown>;
   output_data?: Record<string, unknown>;
   error_message?: string;
+  metadata?: TaskMetadata;
   started_at?: number;
   completed_at?: number;
   deadline?: number;
@@ -328,4 +353,41 @@ export interface PaginatedResponse<T> {
     total: number;
     total_pages: number;
   };
+}
+
+// ==========================================
+// LLM Capability & Routing Types
+// ==========================================
+export interface LLMCapability {
+  id: string;
+  model_name: string;
+  provider: 'openai' | 'gemini' | 'anthropic';
+  strengths: string[];
+  context_window_kb: number;
+  cost_per_1k_input_tokens: number;
+  cost_per_1k_output_tokens: number;
+  avg_speed_tps: number;
+  suitable_for: TaskType[];
+  max_tokens?: number;
+  supports_vision?: boolean;
+  supports_function_calling?: boolean;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface LLMRoutingDecision {
+  id: string;
+  task_id: string;
+  task_type: TaskType;
+  task_metadata: TaskMetadata;
+  selected_model: string;
+  selected_provider: string;
+  selection_reason: string;
+  alternative_models?: string[];
+  estimated_cost: number;
+  routing_strategy: 'cost' | 'performance' | 'balanced';
+  decided_at: number;
+  actual_cost?: number;
+  actual_tokens_used?: number;
+  created_at: number;
 }

@@ -5,6 +5,7 @@
 
 import { FactoryOSClient } from '../integrations/factory-os-client'
 import type { Env } from '../main/js/types'
+import { NotificationService, type AlertPayload } from './notification-service'
 
 export interface HealthCheckResult {
   timestamp: string
@@ -18,6 +19,7 @@ export interface HealthCheckResult {
 export class HealthMonitorService {
   private env: Env
   private factoryOSClient: FactoryOSClient
+  private notificationService: NotificationService | null = null
 
   constructor(env: Env) {
     this.env = env
@@ -26,6 +28,50 @@ export class HealthMonitorService {
       apiKey: env.FACTORY_OS_API_KEY,
       timeout: 30000,
     })
+
+    // Initialize notification service if configured
+    if (env.SLACK_WEBHOOK_URL || env.DISCORD_WEBHOOK_URL || env.SENDGRID_API_KEY) {
+      this.notificationService = new NotificationService({
+        slack: {
+          enabled: !!env.SLACK_WEBHOOK_URL,
+          webhookUrl: env.SLACK_WEBHOOK_URL || '',
+          channel: env.SLACK_CHANNEL || '#alerts',
+        },
+        discord: {
+          enabled: !!env.DISCORD_WEBHOOK_URL,
+          webhookUrl: env.DISCORD_WEBHOOK_URL || '',
+        },
+        email: {
+          enabled: !!env.SENDGRID_API_KEY,
+          apiKey: env.SENDGRID_API_KEY,
+          from: env.ALERT_EMAIL_FROM || 'alerts@shyangtsuen.xyz',
+          to: env.ALERT_EMAIL_TO?.split(',') || [],
+        },
+      })
+    }
+  }
+
+  /**
+   * Send alert notification
+   */
+  private async sendAlert(alert: Omit<AlertPayload, 'timestamp'>): Promise<void> {
+    if (!this.notificationService) {
+      console.warn('[HealthMonitor] Notification service not configured')
+      return
+    }
+
+    const payload: AlertPayload = {
+      ...alert,
+      timestamp: Date.now(),
+    }
+
+    const result = await this.notificationService.sendAlert(payload)
+
+    if (result.success) {
+      console.log('[HealthMonitor] ✅ Alert sent via:', Object.keys(result.channels).filter(k => result.channels[k]))
+    } else {
+      console.error('[HealthMonitor] ❌ Failed to send alert via all channels')
+    }
   }
 
   /**
@@ -194,14 +240,36 @@ export class HealthMonitorService {
 
     if (consecutiveFailures >= 3) {
       console.error('[HealthMonitor] ⚠️ ALERT: Factory OS has been down for 3+ consecutive checks')
-      // TODO: 發送告警通知 (Email, Slack, etc.)
+
+      // 發送告警通知
+      await this.sendAlert({
+        level: 'critical',
+        title: 'Factory OS Down - Critical Alert',
+        message: `Factory OS has been unreachable for ${consecutiveFailures} consecutive health checks`,
+        metadata: {
+          consecutive_failures: consecutiveFailures,
+          last_check: new Date().toISOString(),
+          factory_os_url: 'https://factoryos.shyangtsuen.xyz',
+        },
+      });
     }
 
     // 響應時間異常
     const avgResponseTime = recentChecks.reduce((sum, check) => sum + check.response_time_ms, 0) / recentChecks.length
     if (avgResponseTime > 5000) {
       console.warn('[HealthMonitor] ⚠️ WARNING: Average response time is high:', avgResponseTime, 'ms')
-      // TODO: 發送性能警告
+
+      // 發送性能警告
+      await this.sendAlert({
+        level: 'warning',
+        title: 'High Response Time Warning',
+        message: `Average response time is ${avgResponseTime.toFixed(0)}ms (threshold: 5000ms)`,
+        metadata: {
+          avg_response_time_ms: Math.round(avgResponseTime),
+          threshold_ms: 5000,
+          recent_checks: recentChecks.length,
+        },
+      });
     }
   }
 }
