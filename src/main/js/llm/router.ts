@@ -10,13 +10,15 @@
 import { BaseLLMProvider, ChatRequest, ChatResponse, EmbeddingRequest, EmbeddingResponse } from './providers/base-provider';
 import { OpenAIProvider } from './providers/openai-provider';
 import { GeminiProvider } from './providers/gemini-provider';
+import { ClaudeProvider } from './providers/claude-provider';
 
 export type TaskType = 'embedding' | 'chat' | 'vision' | 'function-calling';
 export type OptimizationStrategy = 'cost' | 'performance' | 'balanced';
+export type ProviderType = 'openai' | 'gemini' | 'claude';
 
 export interface RouterConfig {
   strategy: OptimizationStrategy;
-  preferredProvider?: 'openai' | 'gemini';
+  preferredProvider?: ProviderType;
   fallbackEnabled: boolean;
   maxRetries: number;
 }
@@ -40,11 +42,17 @@ export class LLMRouter {
   constructor(
     openaiKey: string,
     geminiKey: string,
+    claudeKey?: string,
     config?: Partial<RouterConfig>
   ) {
     // Initialize providers
     this.providers.set('openai', new OpenAIProvider(openaiKey));
     this.providers.set('gemini', new GeminiProvider(geminiKey));
+
+    // Add Claude provider if API key provided
+    if (claudeKey) {
+      this.providers.set('claude', new ClaudeProvider(claudeKey));
+    }
 
     // Default configuration
     this.config = {
@@ -179,7 +187,7 @@ export class LLMRouter {
   }
 
   /**
-   * Balanced selection: Cost-effective for simple tasks, performance for complex ones
+   * Balanced selection: Quality-first for complex tasks, cost-effective for simple ones
    */
   private selectBalanced(
     providers: [string, BaseLLMProvider][],
@@ -193,7 +201,24 @@ export class LLMRouter {
     }
 
     if (taskType === 'chat') {
-      // Estimate complexity based on message length
+      // Analyze task complexity and requirements
+      const complexity = this.analyzeComplexity(request);
+      const isSecurityCritical = this.isSecurityTask(request);
+      const isUITask = this.isUITask(request);
+
+      // High complexity or security-critical: Use Claude (best quality)
+      if (complexity >= 8 || isSecurityCritical) {
+        const claude = providers.find(([name]) => name === 'claude');
+        if (claude) return claude[1];
+      }
+
+      // UI tasks: Use OpenAI (good frontend experience)
+      if (isUITask) {
+        const openai = providers.find(([name]) => name === 'openai');
+        if (openai) return openai[1];
+      }
+
+      // Medium complexity: Estimate message length
       const messages = (request as ChatRequest).messages || [];
       const totalLength = messages.reduce((sum, msg) => sum + msg.content.length, 0);
 
@@ -375,5 +400,112 @@ export class LLMRouter {
     this.providers.forEach((_, name) => {
       this.requestCounts.set(name, 0);
     });
+  }
+
+  /**
+   * Analyze task complexity based on message content
+   * Returns complexity score from 1-10
+   */
+  private analyzeComplexity(request: any): number {
+    const messages = (request as ChatRequest).messages || [];
+    const totalContent = messages.map((m) => m.content).join(' ');
+
+    let complexity = 5; // Base complexity
+
+    // Length-based complexity
+    if (totalContent.length > 5000) complexity += 2;
+    else if (totalContent.length > 2000) complexity += 1;
+
+    // High-complexity keywords (architecture, system design, security)
+    const highComplexityKeywords = [
+      'architecture',
+      'system design',
+      'security',
+      'authentication',
+      'authorization',
+      'encryption',
+      'scalability',
+      'distributed',
+      'microservices',
+      'database design',
+      'schema',
+      'migration',
+      'performance optimization',
+      'algorithm',
+      'data structure',
+    ];
+
+    const keywordMatches = highComplexityKeywords.filter((keyword) =>
+      totalContent.toLowerCase().includes(keyword)
+    );
+
+    if (keywordMatches.length >= 3) complexity += 2;
+    else if (keywordMatches.length >= 1) complexity += 1;
+
+    // Cap at 10
+    return Math.min(complexity, 10);
+  }
+
+  /**
+   * Detect if task is security-critical
+   */
+  private isSecurityTask(request: any): boolean {
+    const messages = (request as ChatRequest).messages || [];
+    const totalContent = messages.map((m) => m.content).join(' ').toLowerCase();
+
+    const securityKeywords = [
+      'security',
+      'auth',
+      'authentication',
+      'authorization',
+      'rls',
+      'row level security',
+      'permission',
+      'access control',
+      'encryption',
+      'jwt',
+      'token',
+      'api key',
+      'secret',
+      'vulnerability',
+      'xss',
+      'csrf',
+      'sql injection',
+      'owasp',
+    ];
+
+    return securityKeywords.some((keyword) => totalContent.includes(keyword));
+  }
+
+  /**
+   * Detect if task is UI/frontend related
+   */
+  private isUITask(request: any): boolean {
+    const messages = (request as ChatRequest).messages || [];
+    const totalContent = messages.map((m) => m.content).join(' ').toLowerCase();
+
+    const uiKeywords = [
+      'ui',
+      'user interface',
+      'frontend',
+      'component',
+      'react',
+      'vue',
+      'svelte',
+      'css',
+      'tailwind',
+      'styling',
+      'layout',
+      'responsive',
+      'design',
+      'button',
+      'form',
+      'modal',
+      'dialog',
+      'navigation',
+      'menu',
+    ];
+
+    return uiKeywords.some((keyword) => totalContent.includes(keyword));
   }
 }
