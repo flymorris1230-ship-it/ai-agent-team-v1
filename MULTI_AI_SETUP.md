@@ -1,270 +1,378 @@
-# Multi-AI Collaboration Setup Guide
-## ChatGPT + Gemini + AI Agent Team 整合設置
+# Multi-LLM Router 使用指南
+## GAC_FactoryOS 智能 LLM 路由系統
+
+## 🎯 系統概述
+
+GAC_FactoryOS 已內建**企業級 Multi-LLM 路由系統**，支援：
+
+- ✅ **OpenAI** (GPT-4o, GPT-4o-mini, GPT-3.5-turbo)
+- ✅ **Gemini** (Gemini 2.0 Flash, 1.5 Pro/Flash)
+- ✅ **Claude** (Claude 3.5 Sonnet, Opus, Haiku)
+
+### 核心特性
+
+1. **智能路由** - 根據任務自動選擇最佳 LLM
+2. **自動 Fallback** - 失敗自動切換備用 Provider
+3. **成本優化** - Gemini 免費 embedding 和 chat
+4. **追蹤整合** - 完整的 Genesis Observability 追蹤
+5. **高可用性** - 健康檢查、重試、負載均衡
+
+---
 
 ## 📋 前置要求
 
 ### 1. API Keys
-你需要以下 API keys:
 
-- **OpenAI API Key** (ChatGPT/Codex)
-  - 註冊: https://platform.openai.com/api-keys
-  - 費用: GPT-4o-mini ~$0.15/MTok
-
-- **Google AI API Key** (Gemini)
-  - 註冊: https://makersuite.google.com/app/apikey
-  - 費用: Gemini 1.5 Flash ~$0.075/MTok
-
-- **Anthropic API Key** (Claude - AI Agent Team)
-  - 註冊: https://console.anthropic.com/settings/keys
-  - 費用: Claude Sonnet ~$3/MTok
-
-### 2. Node.js & Dependencies
+你需要以下 API keys（至少 2 個）:
 
 ```bash
-# 確保 Node.js >= 18
-node --version
+# 必需（至少選其一）
+OPENAI_API_KEY=sk-proj-...      # https://platform.openai.com/api-keys
+GOOGLE_API_KEY=AIza...           # https://makersuite.google.com/app/apikey
 
-# 安裝 dependencies
+# 可選（用於高質量任務）
+ANTHROPIC_API_KEY=sk-ant-...     # https://console.anthropic.com/settings/keys
+```
+
+### 2. 環境設置
+
+```bash
 cd apps/ai-agent-team
-npm install
+
+# 創建 .env 文件
+cat > .env << 'EOF'
+# LLM Providers
+OPENAI_API_KEY=sk-proj-...
+GOOGLE_API_KEY=AIza...
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Genesis Observability (可選)
+OBSERVABILITY_API_URL=https://obs-edge.flymorris1230.workers.dev/ingest
+OBSERVABILITY_API_KEY=a590aec22adeab9bb9fcf8ff81ccf790a588a298edeffce3216b317c18f87f9e
+EOF
 ```
 
 ---
 
 ## 🚀 快速開始
 
-### Step 1: 安裝額外依賴
-
-```bash
-cd apps/ai-agent-team
-
-# 安裝 OpenAI SDK
-npm install openai
-
-# 安裝 Google Generative AI SDK
-npm install @google/generative-ai
-
-# 安裝 TypeScript 類型定義 (如果需要)
-npm install --save-dev @types/node
-```
-
-### Step 2: 設置環境變數
-
-創建 `.env` 文件：
-
-```bash
-# apps/ai-agent-team/.env
-
-# OpenAI (ChatGPT)
-OPENAI_API_KEY=sk-proj-...
-
-# Google AI (Gemini)
-GOOGLE_API_KEY=AIza...
-
-# Anthropic (Claude - AI Agent Team)
-ANTHROPIC_API_KEY=sk-ant-...
-
-# Genesis Observability (追蹤使用量)
-OBSERVABILITY_API_URL=https://obs-edge.flymorris1230.workers.dev/ingest
-OBSERVABILITY_API_KEY=a590aec22adeab9bb9fcf8ff81ccf790a588a298edeffce3216b317c18f87f9e
-```
-
-### Step 3: 測試連接
-
-創建測試腳本 `test-connections.ts`:
+### Step 1: 基本使用
 
 ```typescript
-import { ChatGPTClient } from './src/main/js/clients/chatgpt-client';
-import { GeminiClient } from './src/main/js/clients/gemini-client';
+import { LLMRouter } from './src/main/js/llm/router';
 
-async function testConnections() {
-  console.log('🧪 測試 AI 連接...\n');
-
-  // Test ChatGPT
-  try {
-    const chatgpt = new ChatGPTClient({
-      apiKey: process.env.OPENAI_API_KEY!,
-      model: 'gpt-4o-mini',
-    });
-    const result = await chatgpt.complete('Hello, ChatGPT!');
-    console.log('✅ ChatGPT 連接成功');
-    console.log(`   回應: ${result.content.substring(0, 50)}...`);
-    console.log(`   Token: ${result.tokens}, 成本: $${result.cost.toFixed(6)}\n`);
-  } catch (error: any) {
-    console.error('❌ ChatGPT 連接失敗:', error.message, '\n');
+// 初始化 Router
+const router = new LLMRouter(
+  process.env.OPENAI_API_KEY!,
+  process.env.GOOGLE_API_KEY!,
+  process.env.ANTHROPIC_API_KEY, // 可選
+  {
+    strategy: 'balanced',      // 'cost' | 'performance' | 'balanced'
+    fallbackEnabled: true,     // 啟用自動 fallback
+    maxRetries: 2,             // 最多重試 2 次
   }
+);
 
-  // Test Gemini
-  try {
-    const gemini = new GeminiClient({
-      apiKey: process.env.GOOGLE_API_KEY!,
-      model: 'gemini-1.5-flash',
-    });
-    const result = await gemini.generate('Hello, Gemini!');
-    console.log('✅ Gemini 連接成功');
-    console.log(`   回應: ${result.content.substring(0, 50)}...`);
-    console.log(`   Token: ${result.tokens}, 成本: $${result.cost.toFixed(6)}\n`);
-  } catch (error: any) {
-    console.error('❌ Gemini 連接失敗:', error.message, '\n');
-  }
-}
+// Chat Completion
+const response = await router.createChatCompletion({
+  messages: [
+    { role: 'user', content: '什麼是 TypeScript?' }
+  ],
+  temperature: 0.7,
+});
 
-testConnections();
+console.log('Provider:', response.provider);
+console.log('Model:', response.model);
+console.log('Content:', response.message.content);
+console.log('Cost:', response.cost);
+console.log('Tokens:', response.usage.total_tokens);
 ```
 
-執行測試：
+### Step 2: 運行示範
 
 ```bash
-npx tsx test-connections.ts
-```
+# 設置 API keys
+export OPENAI_API_KEY=sk-...
+export GOOGLE_API_KEY=AIza...
+export ANTHROPIC_API_KEY=sk-ant-...  # 可選
 
-### Step 4: 運行示範
-
-```bash
-# 運行完整示範
-npx tsx examples/multi-ai-collaboration-demo.ts
-
-# 或運行單個示範
-# Demo 1: 並行執行 + 投票
-# Demo 2: 階梯式執行
-# Demo 3: 專業分工
-# Demo 4: 動態路由
-# Demo 5: 成本對比
+# 運行示範
+npx tsx examples/multi-llm-router-demo.ts
 ```
 
 ---
 
-## 📖 使用範例
+## 🎛️ 路由策略
 
-### 範例 1: 基本使用
+### 1. Balanced 策略（推薦）⭐
+
+**智能選擇，質量與成本平衡**
 
 ```typescript
-import { ChatGPTClient } from './src/main/js/clients/chatgpt-client';
-import { GeminiClient } from './src/main/js/clients/gemini-client';
+const router = new LLMRouter(
+  openaiKey,
+  geminiKey,
+  claudeKey,
+  { strategy: 'balanced' }
+);
+```
 
-// 初始化
-const chatgpt = new ChatGPTClient({
-  apiKey: process.env.OPENAI_API_KEY!,
+**路由邏輯**:
+- **高複雜度任務** (≥8) → Claude (最高質量)
+- **安全任務** (auth, encryption) → Claude (最可靠)
+- **UI 任務** (React, component) → OpenAI (前端經驗好)
+- **簡單查詢** (<1000字) → Gemini (便宜/免費)
+- **複雜查詢** (≥1000字) → OpenAI (質量好)
+
+### 2. Cost 策略
+
+**成本優先，最大化節省**
+
+```typescript
+const router = new LLMRouter(
+  openaiKey,
+  geminiKey,
+  claudeKey,
+  { strategy: 'cost' }
+);
+```
+
+**路由邏輯**:
+- **Embedding** → Gemini (免費)
+- **Chat** → Gemini 2.0 Flash (免費) 或 1.5 Flash 8B (最便宜)
+
+**成本節省**: Gemini 比 OpenAI 便宜 **80-95%**
+
+### 3. Performance 策略
+
+**性能優先，速度與可靠性**
+
+```typescript
+const router = new LLMRouter(
+  openaiKey,
+  geminiKey,
+  claudeKey,
+  { strategy: 'performance' }
+);
+```
+
+**路由邏輯**:
+- **所有任務** → OpenAI (最可靠)
+- **Fallback** → 其他可用 providers
+
+---
+
+## 💡 使用範例
+
+### 範例 1: 簡單對話
+
+```typescript
+const response = await router.createChatCompletion({
+  messages: [
+    { role: 'user', content: 'Hello!' }
+  ],
 });
 
-const gemini = new GeminiClient({
-  apiKey: process.env.GOOGLE_API_KEY!,
+// Balanced 策略: 自動選 Gemini (簡單查詢，免費)
+```
+
+### 範例 2: 複雜任務
+
+```typescript
+const response = await router.createChatCompletion({
+  messages: [
+    {
+      role: 'user',
+      content: `設計一個分散式系統架構，包含：
+        1. 微服務設計
+        2. 數據庫分片
+        3. 負載均衡
+        4. 容錯機制
+        請提供詳細方案。`
+    }
+  ],
 });
 
-// 使用 ChatGPT
-const result1 = await chatgpt.complete('撰寫一個排序函數');
-console.log(result1.content);
-
-// 使用 Gemini
-const result2 = await gemini.generate('解釋什麼是遞歸');
-console.log(result2.content);
+// Balanced 策略: 自動選 Claude (高複雜度) 或 OpenAI (長內容)
 ```
 
-### 範例 2: 並行執行
+### 範例 3: 安全任務
 
 ```typescript
-// 同時調用兩個 AI，比較結果
-const [gptResult, geminiResult] = await Promise.all([
-  chatgpt.complete('什麼是 TypeScript?'),
-  gemini.generate('什麼是 TypeScript?'),
-]);
+const response = await router.createChatCompletion({
+  messages: [
+    {
+      role: 'user',
+      content: '如何實現 JWT authentication 和 Row Level Security?'
+    }
+  ],
+});
 
-console.log('ChatGPT:', gptResult.content);
-console.log('Gemini:', geminiResult.content);
-console.log('總成本:', gptResult.cost + geminiResult.cost);
+// Balanced 策略: 自動選 Claude (安全任務)
 ```
 
-### 範例 3: 代碼生成與審查
+### 範例 4: Embedding（免費）
 
 ```typescript
-// 1. Gemini 快速生成
-const code = await gemini.generateCode('創建一個用戶管理 API', 'typescript');
+const response = await router.createEmbedding({
+  input: 'TypeScript is a typed superset of JavaScript',
+});
 
-// 2. ChatGPT 審查
-const review = await chatgpt.reviewCode(code.content);
-
-console.log('生成的代碼:', code.content);
-console.log('審查意見:', review.content);
+// 所有策略: 自動選 Gemini (免費 embedding)
+console.log('Cost:', response.cost); // $0.00
 ```
 
-### 範例 4: 成本優化
+### 範例 5: 多輪對話
 
 ```typescript
-// 根據任務複雜度選擇 AI
-async function smartExecute(task: string, complexity: 'low' | 'high') {
-  if (complexity === 'low') {
-    // 簡單任務用 Gemini (便宜)
-    return await gemini.generate(task);
-  } else {
-    // 複雜任務用 ChatGPT (質量高)
-    return await chatgpt.complete(task);
+const response = await router.createChatCompletion({
+  messages: [
+    { role: 'user', content: '你好！' },
+    { role: 'assistant', content: '你好！有什麼我可以幫助你的？' },
+    { role: 'user', content: '幫我解釋什麼是遞歸' },
+  ],
+});
+```
+
+### 範例 6: 自定義參數
+
+```typescript
+const response = await router.createChatCompletion({
+  messages: [{ role: 'user', content: '生成代碼' }],
+  temperature: 0.3,  // 更確定性的輸出
+  maxTokens: 2048,   // 限制輸出長度
+  topP: 0.9,
+});
+```
+
+---
+
+## 🔄 自動 Fallback
+
+系統會自動處理失敗：
+
+```typescript
+const router = new LLMRouter(
+  openaiKey,
+  geminiKey,
+  claudeKey,
+  {
+    fallbackEnabled: true,  // 啟用 fallback
+    maxRetries: 2,          // 每個 provider 最多重試 2 次
   }
-}
+);
 
-const result = await smartExecute('寫一個 Hello World', 'low');
+// 如果 Primary provider 失敗，自動嘗試其他 providers
+const response = await router.createChatCompletion({
+  messages: [{ role: 'user', content: 'Hello' }],
+});
+
+// ✅ 保證成功（只要有一個 provider 可用）
 ```
+
+**Fallback 流程**:
+1. 嘗試 Primary provider (最多 2 次)
+2. 失敗 → 標記為不健康
+3. 自動切換到其他健康的 provider
+4. 5 分鐘後恢復健康狀態
 
 ---
 
-## 📊 成本預估
+## 📊 監控與統計
 
-### 典型任務成本 (GPT-4o-mini + Gemini 1.5 Flash)
+### 健康檢查
 
-| 任務類型 | Tokens | ChatGPT | Gemini | 節省 |
-|---------|--------|---------|--------|------|
-| 簡單問答 | 200 | $0.0001 | $0.00002 | 80% |
-| 代碼生成 | 1000 | $0.0006 | $0.0001 | 83% |
-| 代碼審查 | 2000 | $0.0012 | $0.0002 | 83% |
-| 文檔生成 | 3000 | $0.0018 | $0.0003 | 83% |
+```typescript
+const healthStatus = await router.getHealthStatus();
 
-**建議**:
-- 簡單任務 → Gemini (成本低 80%)
-- 複雜任務 → ChatGPT (質量高)
-- 關鍵任務 → 並行執行 + 投票 (最可靠，但成本 2x)
+console.log(healthStatus);
+// {
+//   openai: { provider: 'openai', healthy: true, latency: 120 },
+//   gemini: { provider: 'gemini', healthy: true, latency: 80 },
+//   claude: { provider: 'claude', healthy: true, latency: 150 },
+// }
+```
+
+### 使用統計
+
+```typescript
+// 執行一些請求後...
+const stats = router.getUsageStats();
+
+console.log(stats);
+// {
+//   openai: { requests: 10, healthy: true },
+//   gemini: { requests: 25, healthy: true },
+//   claude: { requests: 5, healthy: true },
+// }
+
+// 重置統計
+router.resetStats();
+```
+
+### Genesis Observability 追蹤
+
+系統自動追蹤所有 LLM 使用：
+
+```typescript
+// 自動上報到 Genesis Observability
+const router = new LLMRouter(
+  openaiKey,
+  geminiKey,
+  claudeKey,
+  { strategy: 'balanced' },
+  env  // 傳入 env 啟用追蹤
+);
+
+// 每個請求自動記錄:
+// - Provider 和 Model
+// - Token 使用量
+// - 成本
+// - 延遲
+// - 任務類型
+```
+
+查看追蹤數據：
+https://genesis-observability-obs-dashboard.vercel.app/
 
 ---
 
-## 🎯 進階使用
+## 💰 成本分析
 
-### 自定義模型選擇
+### Provider 定價（每百萬 tokens）
 
-```typescript
-// 使用不同的 ChatGPT 模型
-const chatgptPro = new ChatGPTClient({
-  apiKey: process.env.OPENAI_API_KEY!,
-  model: 'gpt-4o', // 更強大，更貴
-});
+| Provider | Chat Input | Chat Output | Embedding |
+|----------|------------|-------------|-----------|
+| **Gemini 2.0 Flash** | $0 (免費) | $0 (免費) | $0 (免費) |
+| Gemini 1.5 Flash 8B | $0.075 | $0.30 | $0 (免費) |
+| **GPT-4o-mini** | $0.15 | $0.60 | $0.02/1K |
+| GPT-4o | $2.50 | $10.00 | - |
+| Claude 3.5 Sonnet | $3.00 | $15.00 | - |
 
-// 使用不同的 Gemini 模型
-const geminiPro = new GeminiClient({
-  apiKey: process.env.GOOGLE_API_KEY!,
-  model: 'gemini-1.5-pro', // 長上下文，多模態
-});
+### 成本節省範例
+
+**場景 1: 簡單問答**
+```
+Gemini:     $0.00 (免費)
+GPT-4o-mini: $0.0001
+節省: 100%
 ```
 
-### 調整參數
-
-```typescript
-const chatgpt = new ChatGPTClient({
-  apiKey: process.env.OPENAI_API_KEY!,
-  model: 'gpt-4o-mini',
-  temperature: 0.3, // 更確定性的輸出 (0-1)
-  maxTokens: 2048,  // 限制輸出長度
-});
+**場景 2: 代碼生成 (1000 tokens)**
+```
+Gemini:     $0.00 (免費) 或 $0.0001
+GPT-4o-mini: $0.0006
+節省: 83-100%
 ```
 
-### 多輪對話
-
-```typescript
-// ChatGPT 多輪對話
-const messages = [
-  { role: 'user', content: '你好！' },
-  { role: 'assistant', content: '你好！有什麼我可以幫助你的？' },
-  { role: 'user', content: '幫我解釋什麼是遞歸' },
-];
-
-const result = await chatgpt.chat(messages);
+**場景 3: Embedding (1000 tokens)**
 ```
+Gemini:     $0.00 (免費)
+OpenAI:     $0.00002
+節省: 100%
+```
+
+**Balanced 策略每月節省**: ~30-50%
 
 ---
 
@@ -277,93 +385,159 @@ const result = await chatgpt.chat(messages);
 ```
 
 **解決**:
-- 檢查 `.env` 文件是否正確設置
-- 確認 API key 沒有過期
-- 檢查 API key 是否有正確的權限
+```bash
+# 檢查 .env 文件
+cat .env | grep API_KEY
 
-### 問題 2: 網絡超時
+# 確認 key 格式正確
+# OpenAI: sk-proj-...
+# Google: AIza...
+# Anthropic: sk-ant-...
+```
+
+### 問題 2: 所有 Providers 失敗
 
 ```
-錯誤: Request timeout
-```
-
-**解決**:
-- 檢查網絡連接
-- 增加超時時間
-- 使用代理（如果在中國大陸）
-
-### 問題 3: Token 限制
-
-```
-錯誤: Maximum context length exceeded
+錯誤: All LLM providers failed
 ```
 
 **解決**:
-- 減少輸入內容長度
-- 使用 `maxTokens` 參數限制輸出
-- 考慮使用支援更長上下文的模型 (Gemini Pro 1M tokens)
+1. 檢查網絡連接
+2. 確認至少一個 API key 有效
+3. 檢查 API 配額是否用完
+4. 運行健康檢查: `router.getHealthStatus()`
 
-### 問題 4: 成本超標
+### 問題 3: Gemini 免費配額用完
 
 **解決**:
-- 設置每日預算限制
-- 優先使用 Gemini (成本低 80%)
-- 避免不必要的並行執行
-- 使用動態路由策略
+- Gemini 2.0 Flash 目前免費（實驗性）
+- 用完後會自動 fallback 到 OpenAI
+- 或升級到付費 Gemini 1.5 Flash 8B
+
+### 問題 4: 延遲過高
+
+**解決**:
+```typescript
+// 使用 Performance 策略
+const router = new LLMRouter(
+  openaiKey,
+  geminiKey,
+  claudeKey,
+  { strategy: 'performance' }  // 優先使用 OpenAI
+);
+```
 
 ---
 
-## 📈 監控與追蹤
+## 📚 進階功能
 
-### 整合到 Genesis Observability
+### 1. 自定義複雜度分析
 
+Router 會自動分析任務複雜度 (1-10)，基於：
+- 內容長度
+- 關鍵字 (architecture, security, algorithm, etc.)
+
+你可以通過內容引導路由：
 ```typescript
-import { trackCollaboration } from './src/main/js/utils/observability';
-
-// 執行任務
-const result = await chatgpt.complete('任務描述');
-
-// 上報使用量
-await trackCollaboration({
-  project_id: 'GAC_FactoryOS',
-  task_id: 'task-001',
-  task_type: 'code_generation',
-  strategy: 'dynamic_routing',
-  ai_used: ['chatgpt'],
-  total_tokens: result.tokens,
-  total_cost: result.cost,
-  duration_ms: 1500,
+// 強制使用 Claude（提高複雜度）
+const response = await router.createChatCompletion({
+  messages: [{
+    role: 'user',
+    content: '【高複雜度】設計分散式系統架構...' // 包含關鍵字
+  }],
 });
 ```
 
-### 查看統計
+### 2. 負載均衡
 
-訪問 Dashboard:
-https://genesis-observability-obs-dashboard.vercel.app/
+多個相同優先級的 providers 會自動負載均衡：
+```typescript
+// 如果 OpenAI 和 Gemini 都適合，選擇請求數較少的
+const router = new LLMRouter(..., { strategy: 'balanced' });
+
+// Router 會追蹤每個 provider 的請求數
+// 自動平衡負載
+```
+
+### 3. 健康恢復
+
+Provider 標記為不健康後，5 分鐘後自動恢復：
+```typescript
+// Provider 失敗 → 標記為不健康 → 5 分鐘後恢復
+// 無需手動干預
+```
 
 ---
 
-## 📚 更多資源
+## 🎯 最佳實踐
 
-- **OpenAI 文檔**: https://platform.openai.com/docs
-- **Google AI 文檔**: https://ai.google.dev/docs
-- **Anthropic 文檔**: https://docs.anthropic.com/
-- **多 AI 協作設計**: `MULTI_AI_COLLABORATION.md`
-- **Genesis Observability**: `genesis-observability/`
+### 1. 策略選擇
+
+- **開發/測試**: 使用 `cost` 策略（節省成本）
+- **生產環境**: 使用 `balanced` 策略（質量與成本平衡）
+- **關鍵任務**: 使用 `performance` 策略（最高可靠性）
+
+### 2. 錯誤處理
+
+```typescript
+try {
+  const response = await router.createChatCompletion({...});
+} catch (error) {
+  console.error('LLM 請求失敗:', error.message);
+  // 所有 providers 都失敗，需要人工介入
+}
+```
+
+### 3. 成本監控
+
+定期檢查使用統計：
+```typescript
+const stats = router.getUsageStats();
+console.log('總請求數:', Object.values(stats).reduce((sum, s) => sum + s.requests, 0));
+```
+
+### 4. 環境配置
+
+```bash
+# 開發環境: 只使用免費 providers
+GOOGLE_API_KEY=AIza...
+
+# 生產環境: 配置所有 providers
+OPENAI_API_KEY=sk-...
+GOOGLE_API_KEY=AIza...
+ANTHROPIC_API_KEY=sk-ant-...
+```
 
 ---
 
-## 🎯 下一步
+## 📖 相關文檔
 
-1. ✅ 完成 API Keys 設置
-2. ✅ 測試連接
-3. ✅ 運行示範
-4. 🔄 實現你的第一個協作任務
-5. 📊 監控使用量和成本
-6. 🚀 優化策略
+- **LLM Router 源碼**: `src/main/js/llm/router.ts`
+- **Providers**: `src/main/js/llm/providers/`
+- **Genesis Observability**: `../../../genesis-observability/`
+- **多 AI 協作架構**: `../../../genesis-observability/MULTI_AI_COLLABORATION.md`
+
+---
+
+## ✨ 總結
+
+GAC_FactoryOS 的 Multi-LLM Router 提供：
+
+1. ✅ **智能路由** - 自動選擇最佳 LLM
+2. ✅ **高可用性** - 自動 fallback 和重試
+3. ✅ **成本優化** - Gemini 免費 + 智能策略節省 30-50%
+4. ✅ **完整追蹤** - Genesis Observability 整合
+5. ✅ **企業級** - 健康檢查、負載均衡、統計
+
+**開始使用**:
+```bash
+export OPENAI_API_KEY=sk-...
+export GOOGLE_API_KEY=AIza...
+npx tsx examples/multi-llm-router-demo.ts
+```
 
 ---
 
 **作者**: Claude Code
 **日期**: 2025-10-07
-**版本**: 1.0
+**版本**: 2.0 (更新為使用現有 LLMRouter)
