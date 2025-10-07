@@ -76,12 +76,14 @@ export class RAGEngine {
       this.llmRouter = new LLMRouter(
         env.OPENAI_API_KEY,
         env.GEMINI_API_KEY,
+        env.ANTHROPIC_API_KEY, // Claude API key (optional)
         {
           strategy: this.config.llmStrategy,
           preferredProvider: this.config.preferredProvider,
           fallbackEnabled: true,
           maxRetries: 2,
-        }
+        },
+        env // Pass env for observability config
       );
       this.logger.info('LLM Router initialized', {
         strategy: this.config.llmStrategy,

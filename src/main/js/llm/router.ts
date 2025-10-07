@@ -11,6 +11,7 @@ import { BaseLLMProvider, ChatRequest, ChatResponse, EmbeddingRequest, Embedding
 import { OpenAIProvider } from './providers/openai-provider';
 import { GeminiProvider } from './providers/gemini-provider';
 import { ClaudeProvider } from './providers/claude-provider';
+import { sendToObservability, createObservabilityConfig, ObservabilityConfig } from '../utils/observability';
 
 export type TaskType = 'embedding' | 'chat' | 'vision' | 'function-calling';
 export type OptimizationStrategy = 'cost' | 'performance' | 'balanced';
@@ -38,12 +39,14 @@ export class LLMRouter {
   private config: RouterConfig;
   private healthStatus: Map<string, ProviderHealth> = new Map();
   private requestCounts: Map<string, number> = new Map();
+  private observabilityConfig?: ObservabilityConfig;
 
   constructor(
     openaiKey: string,
     geminiKey: string,
     claudeKey?: string,
-    config?: Partial<RouterConfig>
+    config?: Partial<RouterConfig>,
+    env?: any
   ) {
     // Initialize providers
     this.providers.set('openai', new OpenAIProvider(openaiKey));
@@ -71,22 +74,47 @@ export class LLMRouter {
       });
       this.requestCounts.set(name, 0);
     });
+
+    // Initialize observability config if env provided
+    if (env) {
+      this.observabilityConfig = createObservabilityConfig(env);
+    }
   }
 
   /**
    * Select best provider for embedding
    */
-  async createEmbedding(request: EmbeddingRequest): Promise<EmbeddingResponse> {
+  async createEmbedding(request: EmbeddingRequest, metadata?: Record<string, any>): Promise<EmbeddingResponse> {
+    const startTime = Date.now();
     const provider = this.selectProvider('embedding', request);
     const response = await this.executeWithFallback(
       provider,
       'embedding',
       async (p) => await p.createEmbedding(request)
     );
+    const latency = Date.now() - startTime;
 
     // Add provider metadata and cost information
     response.provider = provider.name;
     response.cost = provider.estimateCost(response.usage.total_tokens, 0, response.model);
+
+    // Send to observability (non-blocking)
+    if (this.observabilityConfig) {
+      sendToObservability(
+        {
+          model: response.model,
+          provider: response.provider as 'openai' | 'gemini' | 'anthropic',
+          input_tokens: response.usage.prompt_tokens || response.usage.total_tokens,
+          output_tokens: 0, // Embeddings don't have output tokens
+          latency_ms: latency,
+          metadata: {
+            ...metadata,
+            task_type: 'embedding',
+          },
+        },
+        this.observabilityConfig
+      ).catch((err) => console.error('[LLMRouter] Observability error:', err));
+    }
 
     return response;
   }
@@ -94,7 +122,8 @@ export class LLMRouter {
   /**
    * Select best provider for chat completion
    */
-  async createChatCompletion(request: ChatRequest): Promise<ChatResponse> {
+  async createChatCompletion(request: ChatRequest, metadata?: Record<string, any>): Promise<ChatResponse> {
+    const startTime = Date.now();
     const taskType: TaskType = 'chat';
     const provider = this.selectProvider(taskType, request);
     const response = await this.executeWithFallback(
@@ -102,6 +131,7 @@ export class LLMRouter {
       taskType,
       async (p) => await p.createChatCompletion(request)
     );
+    const latency = Date.now() - startTime;
 
     // Add provider metadata and cost information
     response.provider = provider.name;
@@ -110,6 +140,24 @@ export class LLMRouter {
       response.usage.completion_tokens,
       response.model
     );
+
+    // Send to observability (non-blocking)
+    if (this.observabilityConfig) {
+      sendToObservability(
+        {
+          model: response.model,
+          provider: response.provider as 'openai' | 'gemini' | 'anthropic',
+          input_tokens: response.usage.prompt_tokens,
+          output_tokens: response.usage.completion_tokens,
+          latency_ms: latency,
+          metadata: {
+            ...metadata,
+            task_type: 'chat',
+          },
+        },
+        this.observabilityConfig
+      ).catch((err) => console.error('[LLMRouter] Observability error:', err));
+    }
 
     return response;
   }

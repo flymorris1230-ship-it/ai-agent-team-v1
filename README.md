@@ -129,6 +129,14 @@ ai-agent-team-v1/
   - 統計分析與告警
   - 推薦 + 兼容 API 端點
 
+- **Genesis Observability** - LLM 使用追蹤與成本監控 (✅ 已整合)
+  - 自動追蹤所有 LLM 使用量（OpenAI, Gemini, Claude）
+  - Token 使用統計（input/output tokens）
+  - 成本分析與優化建議
+  - 延遲監控（P50, P95, P99）
+  - Dashboard：https://genesis-observability-obs-dashboard.vercel.app
+  - 搜尋專案：**GAC_FactoryOS**
+
 ### 備份與運維
 - **NAS** - 本地備份
 - **rclone** - R2 ↔ NAS 同步

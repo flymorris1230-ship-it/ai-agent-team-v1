@@ -17,6 +17,11 @@ account_id = "2fb92a078e2e1ae3f309523fcc76b173"
 ENVIRONMENT = "development"
 LOG_LEVEL = "info"
 DOMAIN = "shyangtsuen.xyz"
+# Genesis Observability - Track all LLM usage
+ENABLE_OBSERVABILITY = "true"
+OBSERVABILITY_API_URL = "https://obs-edge.flymorris1230.workers.dev/ingest"
+OBSERVABILITY_API_KEY = "a590aec22adeab9bb9fcf8ff81ccf790a588a298edeffce3216b317c18f87f9e"
+OBSERVABILITY_PROJECT_ID = "GAC_FactoryOS"
 
 # ==========================================
 # D1 Database Bindings
