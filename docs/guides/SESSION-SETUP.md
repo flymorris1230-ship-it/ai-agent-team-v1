@@ -65,7 +65,7 @@ git checkout origin/main -- PROJECT-CONTINUATION.md
 
 ### 1️⃣ 開啟新終端機
 ```bash
-cd /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1
+cd /Users/morrislin/Desktop/gac-v1/gac-v1
 ./.claude-session-init.sh
 ```
 
@@ -151,13 +151,13 @@ chmod +x .claude-session-init.sh
 git remote -v
 
 # 重新設定 origin
-git remote set-url origin https://github.com/flymorris1230-ship-it/ai-agent-team-v1.git
+git remote set-url origin https://github.com/flymorris1230-ship-it/gac-v1.git
 ```
 
 ### 問題: PROJECT-CONTINUATION.md 不存在
 ```bash
 # 從 GitHub 直接下載
-curl -o PROJECT-CONTINUATION.md https://raw.githubusercontent.com/flymorris1230-ship-it/ai-agent-team-v1/main/PROJECT-CONTINUATION.md
+curl -o PROJECT-CONTINUATION.md https://raw.githubusercontent.com/flymorris1230-ship-it/gac-v1/main/PROJECT-CONTINUATION.md
 ```
 
 ---
@@ -168,7 +168,7 @@ curl -o PROJECT-CONTINUATION.md https://raw.githubusercontent.com/flymorris1230-
 在 `~/.zshrc` 或 `~/.bashrc` 中添加:
 
 ```bash
-alias claude-init="cd /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1 && ./.claude-session-init.sh"
+alias claude-init="cd /Users/morrislin/Desktop/gac-v1/gac-v1 && ./.claude-session-init.sh"
 ```
 
 重新載入配置:

@@ -156,7 +156,7 @@ docker run -d \
 
 1. 在你的 Mac，找到文件：
    ```
-   /mnt/c/Users/flyca/Desktop/claude/ai-agent-team-v1/nas-postgres-proxy.py
+   /mnt/c/Users/flyca/Desktop/claude/gac-v1/nas-postgres-proxy.py
    ```
 
 2. 上傳到 NAS：
@@ -266,7 +266,7 @@ https://nas.stic.shyangtsuen.xyz
 在你的 Mac 執行：
 
 ```bash
-cd /mnt/c/Users/flyca/Desktop/claude/ai-agent-team-v1
+cd /mnt/c/Users/flyca/Desktop/claude/gac-v1
 
 # 設定 Proxy URL
 echo "https://postgres-ai-agent.shyangtsuen.xyz" | \

@@ -554,7 +554,7 @@ git checkout -b phase-7-rag-integration
 
 **下一次開啟終端時，執行**:
 ```bash
-cd /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1
+cd /Users/morrislin/Desktop/gac-v1/gac-v1
 cat docs/guides/NEXT-STEPS.md
 ```
 

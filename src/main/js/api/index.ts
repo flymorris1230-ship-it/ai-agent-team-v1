@@ -19,6 +19,9 @@ import { healthRoutes } from './routes/health';
 import { factoryOsRoutes } from './routes/factory-os';
 import { factoryStatusRoutes } from './routes/factory-status';
 import { factoryStatusLegacyRoutes } from './routes/factory-status-legacy';
+import { agentBuilderRoutes } from './routes/agent-builder';
+import { audioRoutes } from './routes/audio';
+import { imageRoutes } from './routes/images';
 
 // Create Hono app
 const app = new Hono<{ Bindings: Env }>();
@@ -58,6 +61,9 @@ app.get('/', (c) => {
       health: '/api/v1/health',
       'factory-os': '/api/v1/factory-os', // Genesis Factory OS integration
       'factory-status': '/api/v1/factory-status', // Factory OS monitoring (recommended + legacy)
+      'agent-builder': '/api/v1/agent-builder', // Custom agent creation
+      audio: '/api/v1/audio', // Audio processing (STT/TTS)
+      images: '/api/v1/images', // Image analysis and generation
     },
     factory_status_endpoints: {
       recommended: {
@@ -92,6 +98,9 @@ apiV1.route('/health', healthRoutes);
 apiV1.route('/factory-os', factoryOsRoutes); // Genesis Factory OS integration
 apiV1.route('/factory-status', factoryStatusRoutes); // Factory OS monitoring (recommended)
 apiV1.route('/factory-status', factoryStatusLegacyRoutes); // Factory OS monitoring (legacy compatibility)
+apiV1.route('/agent-builder', agentBuilderRoutes); // Custom agent builder
+apiV1.route('/audio', audioRoutes); // Audio processing
+apiV1.route('/images', imageRoutes); // Image processing
 
 app.route('/api/v1', apiV1);
 

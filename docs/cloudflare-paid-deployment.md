@@ -196,11 +196,11 @@ npm run deploy
 
 **預期輸出**:
 ```
-✨  Successfully created/updated script ai-agent-team
-✨  Uploaded ai-agent-team-prod (X.XX sec)
-✨  Published ai-agent-team
-   https://ai-agent-team.your-subdomain.workers.dev
-✨  Success! Your worker is live at https://ai-agent-team.your-subdomain.workers.dev
+✨  Successfully created/updated script gac
+✨  Uploaded gac-prod (X.XX sec)
+✨  Published gac
+   https://gac.your-subdomain.workers.dev
+✨  Success! Your worker is live at https://gac.your-subdomain.workers.dev
 ```
 
 #### 步驟 3: 驗證部署
@@ -211,7 +211,7 @@ npm run deploy
    ```
 
 2. **檢查 Cron Triggers**
-   - 前往 Dashboard → Workers → ai-agent-team → Triggers
+   - 前往 Dashboard → Workers → gac → Triggers
    - 確認 4 個 Cron 定義存在
 
 3. **檢查日誌**

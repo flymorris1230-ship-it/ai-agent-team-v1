@@ -24,7 +24,7 @@ fi
 
 echo ""
 echo "📤 準備推送到 GitHub..."
-echo "倉庫: https://github.com/flymorris1230-ship-it/ai-agent-team-v1.git"
+echo "倉庫: https://github.com/flymorris1230-ship-it/GAC_FactoryOS.git"
 echo ""
 echo "⚠️  如果是第一次推送，系統會要求您輸入："
 echo "   Username: flymorris1230-ship-it"
@@ -51,7 +51,7 @@ if [ $? -eq 0 ]; then
     echo "✅ 成功推送到 GitHub！"
     echo ""
     echo "🌐 查看您的倉庫:"
-    echo "   https://github.com/flymorris1230-ship-it/ai-agent-team-v1"
+    echo "   https://github.com/flymorris1230-ship-it/GAC_FactoryOS"
 else
     echo ""
     echo "❌ 推送失敗"

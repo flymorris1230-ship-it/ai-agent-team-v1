@@ -37,7 +37,7 @@ ANTHROPIC_API_KEY=sk-ant-...     # https://console.anthropic.com/settings/keys
 ### 2. 環境設置
 
 ```bash
-cd apps/ai-agent-team
+cd apps/gac
 
 # 創建 .env 文件
 cat > .env << 'EOF'

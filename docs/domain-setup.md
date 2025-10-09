@@ -113,10 +113,10 @@ npx wrangler queues create ai-agent-backups
 
 | 類型  | 名稱   | 內容                          | Proxy | TTL  |
 |-------|--------|-------------------------------|-------|------|
-| CNAME | api    | ai-agent-team.workers.dev     | ✅    | Auto |
-| CNAME | admin  | ai-agent-team.workers.dev     | ✅    | Auto |
-| CNAME | kb     | ai-agent-team.workers.dev     | ✅    | Auto |
-| CNAME | docs   | ai-agent-team-docs.pages.dev  | ✅    | Auto |
+| CNAME | api    | gac.workers.dev     | ✅    | Auto |
+| CNAME | admin  | gac.workers.dev     | ✅    | Auto |
+| CNAME | kb     | gac.workers.dev     | ✅    | Auto |
+| CNAME | docs   | gac-docs.pages.dev  | ✅    | Auto |
 
 ### 步驟 6: 部署 Workers
 
@@ -211,7 +211,7 @@ npx wrangler deployments list
 ```
 
 #### 查看分析數據
-訪問 Cloudflare Dashboard > Workers & Pages > ai-agent-team > Analytics
+訪問 Cloudflare Dashboard > Workers & Pages > gac > Analytics
 
 ## 🔒 安全設定
 

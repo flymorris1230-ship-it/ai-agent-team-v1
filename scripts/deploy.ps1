@@ -11,7 +11,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "🚀 AI Agent Team - Deployment Script" -ForegroundColor Cyan
+Write-Host "🚀 GAC - Deployment Script" -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Environment: $Environment" -ForegroundColor Yellow
@@ -117,7 +117,7 @@ Write-Step "Step 5: Verifying deployment..."
 $healthUrl = switch ($Environment) {
     'production' { 'https://api.shyangtsuen.xyz/health' }
     'staging'    { 'https://api-staging.shyangtsuen.xyz/health' }
-    default      { 'https://ai-agent-team.workers.dev/health' }
+    default      { 'https://gac.workers.dev/health' }
 }
 
 Write-Host "Testing: $healthUrl" -ForegroundColor Cyan
@@ -168,7 +168,7 @@ if ($Environment -eq 'production') {
     Write-Host "     npx wrangler deployments list --env staging" -ForegroundColor Gray
 } else {
     Write-Host "  1. Test API endpoint:" -ForegroundColor White
-    Write-Host "     curl https://ai-agent-team.workers.dev/health" -ForegroundColor Gray
+    Write-Host "     curl https://gac.workers.dev/health" -ForegroundColor Gray
 }
 
 Write-Host ""

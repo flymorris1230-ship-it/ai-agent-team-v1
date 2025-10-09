@@ -248,11 +248,11 @@ cat >> "$REPORT_FILE" << EOF
 ## 🏗️ Infrastructure Status
 
 ### Deployed Resources
-- ✅ **Cloudflare Workers**: \`ai-agent-team-prod\`
-- ✅ **D1 Database**: \`ai-agent-db-prod-v1\`
-- ✅ **R2 Bucket**: \`ai-agent-files\`
-- ✅ **Task Queue**: \`ai-agent-tasks\`
-- ✅ **Backup Queue**: \`ai-agent-backup\`
+- ✅ **Cloudflare Workers**: \`gac-prod\`
+- ✅ **D1 Database**: \`gac-db-prod-v1\`
+- ✅ **R2 Bucket**: \`gac-files\`
+- ✅ **Task Queue**: \`gac-tasks\`
+- ✅ **Backup Queue**: \`gac-backup\`
 - ✅ **KV Namespace**: \`CACHE\`
 - ✅ **Cron Triggers**: 4 schedules
 
@@ -330,7 +330,7 @@ All 9 AI agents have been verified in production:
 npx wrangler tail --env production
 
 # Check database
-npx wrangler d1 execute ai-agent-db-prod-v1 --command "SELECT * FROM agents;" --remote
+npx wrangler d1 execute gac-db-prod-v1 --command "SELECT * FROM agents;" --remote
 
 # List resources
 npx wrangler d1 list

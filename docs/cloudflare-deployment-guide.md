@@ -124,10 +124,10 @@ crons = [
 
 ```bash
 # 基本健康檢查
-curl https://ai-agent-team.your-subdomain.workers.dev/health
+curl https://gac.your-subdomain.workers.dev/health
 
 # 完整系統檢查
-curl https://ai-agent-team.your-subdomain.workers.dev/health/full
+curl https://gac.your-subdomain.workers.dev/health/full
 ```
 
 預期輸出：
@@ -147,10 +147,10 @@ curl https://ai-agent-team.your-subdomain.workers.dev/health/full
 
 ```bash
 # 列出 Agents
-curl https://ai-agent-team.your-subdomain.workers.dev/api/v1/agents
+curl https://gac.your-subdomain.workers.dev/api/v1/agents
 
 # 創建任務（需要認證）
-curl -X POST https://ai-agent-team.your-subdomain.workers.dev/api/v1/tasks \
+curl -X POST https://gac.your-subdomain.workers.dev/api/v1/tasks \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{
@@ -164,7 +164,7 @@ curl -X POST https://ai-agent-team.your-subdomain.workers.dev/api/v1/tasks \
 
 ```bash
 # 上傳文件到知識庫
-curl -X POST https://ai-agent-team.your-subdomain.workers.dev/api/v1/documents \
+curl -X POST https://gac.your-subdomain.workers.dev/api/v1/documents \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{
@@ -173,7 +173,7 @@ curl -X POST https://ai-agent-team.your-subdomain.workers.dev/api/v1/documents \
   }'
 
 # 測試 RAG 查詢
-curl -X POST https://ai-agent-team.your-subdomain.workers.dev/api/v1/chat \
+curl -X POST https://gac.your-subdomain.workers.dev/api/v1/chat \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{

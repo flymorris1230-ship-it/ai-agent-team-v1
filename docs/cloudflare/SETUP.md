@@ -277,9 +277,9 @@ npx wrangler deploy --env production
 
 # Expected output:
 # Total Upload: XX.XX KiB / gzip: XX.XX KiB
-# Uploaded ai-agent-team-prod (X.XX sec)
-# Published ai-agent-team-prod (X.XX sec)
-#   https://ai-agent-team-prod.<your-subdomain>.workers.dev
+# Uploaded gac-prod (X.XX sec)
+# Published gac-prod (X.XX sec)
+#   https://gac-prod.<your-subdomain>.workers.dev
 # Current Deployment ID: <deployment-id>
 ```
 
@@ -293,7 +293,7 @@ npx wrangler deploy --env production
 
 ```bash
 # Replace with your actual deployment URL
-DEPLOY_URL="https://ai-agent-team-prod.<your-subdomain>.workers.dev"
+DEPLOY_URL="https://gac-prod.<your-subdomain>.workers.dev"
 
 # Test health endpoint
 curl "$DEPLOY_URL/api/health"

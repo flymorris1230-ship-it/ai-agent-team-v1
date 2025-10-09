@@ -41,8 +41,8 @@ https://stic.tw3.quickconnect.to/
 
 **Mac 文件位置**：
 ```
-/Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/nas-postgres-proxy.py
-/Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/nas-proxy.env
+/Users/morrislin/Desktop/gac-v1/gac-v1/nas-postgres-proxy.py
+/Users/morrislin/Desktop/gac-v1/gac-v1/nas-proxy.env
 ```
 
 ---
@@ -269,7 +269,7 @@ echo "K6udBL4OmPs3J+hOLkjM6MfSatZQW+vXY1vm/o9y0L0=" | \
 
 ### 6.2 更新 .env
 
-編輯 `/Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/.env`：
+編輯 `/Users/morrislin/Desktop/gac-v1/gac-v1/.env`：
 
 ```bash
 # PostgreSQL Proxy (通過 Cloudflare Tunnel)
@@ -280,7 +280,7 @@ POSTGRES_PROXY_API_KEY=K6udBL4OmPs3J+hOLkjM6MfSatZQW+vXY1vm/o9y0L0=
 ### 6.3 重新部署 Workers
 
 ```bash
-cd /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1
+cd /Users/morrislin/Desktop/gac-v1/gac-v1
 npm run deploy:production
 ```
 

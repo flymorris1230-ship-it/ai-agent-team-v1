@@ -183,7 +183,7 @@ await this.env.STORAGE.put(fileName, fileData, {
 ### **配置資訊**
 
 ```yaml
-Namespace: ai-agent-team-CACHE
+Namespace: gac-CACHE
 Namespace ID: ac78ef75b22f417d806008d1c948d33e
 Binding: env.CACHE
 ```
@@ -193,7 +193,7 @@ Binding: env.CACHE
 ```json
 {
   "id": "ac78ef75b22f417d806008d1c948d33e",
-  "title": "ai-agent-team-CACHE",
+  "title": "gac-CACHE",
   "supports_url_encoding": true
 }
 ```
@@ -346,7 +346,7 @@ async queue(batch: MessageBatch, env: Env) {
 
 從最新部署輸出可見：
 ```
-Deployed ai-agent-team-prod triggers (1.97 sec)
+Deployed gac-prod triggers (1.97 sec)
   schedule: */5 * * * *
   schedule: */30 * * * *
   schedule: 0 2 * * *

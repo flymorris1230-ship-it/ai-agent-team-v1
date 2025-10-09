@@ -424,7 +424,7 @@ class OllamaClient:
       "name": "Notify Team",
       "type": "n8n-nodes-base.slack",
       "parameters": {
-        "channel": "#ai-agent-team",
+        "channel": "#gac",
         "text": "New task created: {{$json.title}}"
       }
     },
@@ -452,7 +452,7 @@ ssh user@nas-ip
 
 # 克隆專案
 git clone <your-repo>
-cd ai-agent-team-v1
+cd gac-v1
 
 # 編輯配置
 cp config/nas.example.yaml config/nas.yaml

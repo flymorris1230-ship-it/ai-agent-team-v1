@@ -675,7 +675,7 @@ describe('Coordinator Task Routing', () => {
 
 2. **執行資料庫 Migration** (15 minutes)
    ```bash
-   cd apps/ai-agent-team
+   cd apps/gac
    npx wrangler d1 execute ai-agent-db --file=src/main/js/database/phase1-expansion-migration.sql
    ```
 

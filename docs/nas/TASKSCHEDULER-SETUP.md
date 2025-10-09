@@ -43,7 +43,7 @@ https://stic.tw3.quickconnect.to/
 
 **Mac 文件位置**：
 ```
-/Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/nas-postgres-proxy.py
+/Users/morrislin/Desktop/gac-v1/gac-v1/nas-postgres-proxy.py
 ```
 
 上傳後路徑：

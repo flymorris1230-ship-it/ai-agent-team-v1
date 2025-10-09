@@ -41,7 +41,7 @@ ssh your-user@stic.shyangtsuen.xyz exit
 
 ```bash
 # 進入專案目錄
-cd ~/Desktop/ai-agent-team-v1
+cd ~/Desktop/gac-v1
 
 # 設置環境變數（如果 NAS 用戶名不是 admin）
 export NAS_USER=your-username

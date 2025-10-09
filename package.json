@@ -1,5 +1,5 @@
 {
-  "name": "@gac/ai-agent-team",
+  "name": "@gac/gac",
   "version": "1.0.0",
   "description": "Cloudflare + NAS + RAG + MCP Enterprise AI Agent Team System",
   "main": "src/main/js/index.ts",

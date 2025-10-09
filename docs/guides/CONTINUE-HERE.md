@@ -68,7 +68,7 @@
 ### 方法 1：閱讀詳細指南（推薦）
 
 ```bash
-cd /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1
+cd /Users/morrislin/Desktop/gac-v1/gac-v1
 cat docs/guides/NEXT-STEPS.md
 ```
 
@@ -278,7 +278,7 @@ git pull origin main
 執行以下命令立即繼續：
 
 ```bash
-cd /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1
+cd /Users/morrislin/Desktop/gac-v1/gac-v1
 cat docs/guides/CONTINUE-HERE.md
 cat docs/guides/NEXT-STEPS.md
 ```

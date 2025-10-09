@@ -1,8 +1,8 @@
-# CLAUDE.md - ai-agent-team-v1
+# CLAUDE.md - gac-v1
 
 > **Documentation Version**: 1.0
 > **Last Updated**: 2025-10-03
-> **Project**: ai-agent-team-v1
+> **Project**: gac-v1
 > **Description**: Cloudflare + NAS + RAG + MCP 企業級 AI Agent 團隊系統
 > **Features**: GitHub auto-backup, Task agents, technical debt prevention
 

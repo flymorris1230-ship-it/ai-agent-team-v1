@@ -128,7 +128,7 @@ cd /volume1/docker/ai-agent-backup
 pkill -f nas-postgres-proxy.py
 
 # 3. 下載最新版本
-curl -O https://raw.githubusercontent.com/flymorris1230-ship-it/ai-agent-team-v1/main/nas-postgres-proxy.py
+curl -O https://raw.githubusercontent.com/flymorris1230-ship-it/gac-v1/main/nas-postgres-proxy.py
 
 # 4. 重啟 Proxy
 nohup python3 nas-postgres-proxy.py > proxy.log 2>&1 &

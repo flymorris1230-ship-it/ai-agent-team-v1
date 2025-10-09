@@ -37,20 +37,20 @@
 
 | Status | Test | Duration | Details |
 |--------|------|----------|--------|
-| ✅ | File exists: src/integrations/factory-os-client.ts | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/src/integrations/factory-os-client.ts |
-| ✅ | File exists: src/services/health-monitor.ts | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/src/services/health-monitor.ts |
-| ✅ | File exists: src/scheduled/index.ts | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/src/scheduled/index.ts |
-| ✅ | File exists: src/main/js/api/routes/factory-status.ts | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/src/main/js/api/routes/factory-status.ts |
-| ✅ | File exists: src/main/js/api/routes/factory-status-legacy.ts | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/src/main/js/api/routes/factory-status-legacy.ts |
-| ✅ | File exists: src/main/js/database/schema.sql | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/src/main/js/database/schema.sql |
-| ✅ | File exists: docs/FACTORY_OS_INTEGRATION.md | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/docs/FACTORY_OS_INTEGRATION.md |
-| ✅ | File exists: docs/HEALTH_METRICS_STORAGE.md | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/docs/HEALTH_METRICS_STORAGE.md |
-| ✅ | File exists: docs/API_ENDPOINTS_COMPARISON.md | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/docs/API_ENDPOINTS_COMPARISON.md |
-| ✅ | File exists: docs/FACTORY_OS_QUICK_START.md | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/docs/FACTORY_OS_QUICK_START.md |
-| ✅ | File exists: scripts/test-factory-os-integration.ts | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/scripts/test-factory-os-integration.ts |
-| ✅ | File exists: scripts/verify-health-monitor.ts | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/scripts/verify-health-monitor.ts |
-| ✅ | File exists: .dev.vars.example | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/.dev.vars.example |
-| ✅ | File exists: .env.example | - | /Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/.env.example |
+| ✅ | File exists: src/integrations/factory-os-client.ts | - | /Users/morrislin/Desktop/gac-v1/gac-v1/src/integrations/factory-os-client.ts |
+| ✅ | File exists: src/services/health-monitor.ts | - | /Users/morrislin/Desktop/gac-v1/gac-v1/src/services/health-monitor.ts |
+| ✅ | File exists: src/scheduled/index.ts | - | /Users/morrislin/Desktop/gac-v1/gac-v1/src/scheduled/index.ts |
+| ✅ | File exists: src/main/js/api/routes/factory-status.ts | - | /Users/morrislin/Desktop/gac-v1/gac-v1/src/main/js/api/routes/factory-status.ts |
+| ✅ | File exists: src/main/js/api/routes/factory-status-legacy.ts | - | /Users/morrislin/Desktop/gac-v1/gac-v1/src/main/js/api/routes/factory-status-legacy.ts |
+| ✅ | File exists: src/main/js/database/schema.sql | - | /Users/morrislin/Desktop/gac-v1/gac-v1/src/main/js/database/schema.sql |
+| ✅ | File exists: docs/FACTORY_OS_INTEGRATION.md | - | /Users/morrislin/Desktop/gac-v1/gac-v1/docs/FACTORY_OS_INTEGRATION.md |
+| ✅ | File exists: docs/HEALTH_METRICS_STORAGE.md | - | /Users/morrislin/Desktop/gac-v1/gac-v1/docs/HEALTH_METRICS_STORAGE.md |
+| ✅ | File exists: docs/API_ENDPOINTS_COMPARISON.md | - | /Users/morrislin/Desktop/gac-v1/gac-v1/docs/API_ENDPOINTS_COMPARISON.md |
+| ✅ | File exists: docs/FACTORY_OS_QUICK_START.md | - | /Users/morrislin/Desktop/gac-v1/gac-v1/docs/FACTORY_OS_QUICK_START.md |
+| ✅ | File exists: scripts/test-factory-os-integration.ts | - | /Users/morrislin/Desktop/gac-v1/gac-v1/scripts/test-factory-os-integration.ts |
+| ✅ | File exists: scripts/verify-health-monitor.ts | - | /Users/morrislin/Desktop/gac-v1/gac-v1/scripts/verify-health-monitor.ts |
+| ✅ | File exists: .dev.vars.example | - | /Users/morrislin/Desktop/gac-v1/gac-v1/.dev.vars.example |
+| ✅ | File exists: .env.example | - | /Users/morrislin/Desktop/gac-v1/gac-v1/.env.example |
 
 ### Code Quality
 

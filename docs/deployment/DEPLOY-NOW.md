@@ -18,7 +18,7 @@ npx wrangler d1 execute ai-agent-db-prod --file=scripts/schema.sql --remote
 npx wrangler d1 execute ai-agent-db-prod --file=scripts/seed-agents.sql --remote
 
 # 4. Test deployment
-curl https://ai-agent-team-prod.<your-subdomain>.workers.dev/api/health
+curl https://gac-prod.<your-subdomain>.workers.dev/api/health
 ```
 
 **Done!** ✅
@@ -87,7 +87,7 @@ npx wrangler d1 execute ai-agent-db-prod --file=scripts/seed-agents.sql --remote
 
 ```bash
 # Get your deployment URL from the deploy output, then:
-curl https://ai-agent-team-prod.<your-subdomain>.workers.dev/api/health
+curl https://gac-prod.<your-subdomain>.workers.dev/api/health
 
 # Should return: {"status":"healthy",...}
 ```
@@ -96,7 +96,7 @@ curl https://ai-agent-team-prod.<your-subdomain>.workers.dev/api/health
 
 ## 🎉 You're Live!
 
-**Production URL**: `https://ai-agent-team-prod.<your-subdomain>.workers.dev`
+**Production URL**: `https://gac-prod.<your-subdomain>.workers.dev`
 
 **Custom Domain** (optional):
 ```bash
@@ -112,7 +112,7 @@ npx wrangler deployments domains add api.shyangtsuen.xyz --env production
 npx wrangler tail --env production
 
 # Check agents
-curl https://ai-agent-team-prod.<your-subdomain>.workers.dev/api/agents
+curl https://gac-prod.<your-subdomain>.workers.dev/api/agents
 ```
 
 ---

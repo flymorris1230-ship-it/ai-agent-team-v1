@@ -269,7 +269,7 @@ wrangler d1 execute ai-agent-db \
 ## 🆘 支持
 
 遇到問題？
-1. 查看 [GitHub Issues](https://github.com/flymorris1230-ship-it/ai-agent-team-v1/issues)
+1. 查看 [GitHub Issues](https://github.com/flymorris1230-ship-it/gac-v1/issues)
 2. 查看系統日誌：`npm run logs`
 3. 聯繫技術支持
 

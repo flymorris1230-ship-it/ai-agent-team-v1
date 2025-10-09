@@ -1,4 +1,4 @@
-name = "ai-agent-team"
+name = "gac"
 main = "src/main/js/index.ts"
 compatibility_date = "2024-01-01"
 account_id = "2fb92a078e2e1ae3f309523fcc76b173"
@@ -28,7 +28,7 @@ OBSERVABILITY_PROJECT_ID = "GAC_FactoryOS"
 # ==========================================
 [[d1_databases]]
 binding = "DB"
-database_name = "ai-agent-db"
+database_name = "gac-db"
 database_id = "99db8f91-db78-451a-bdc8-75dd2cf3f25b"
 
 # ==========================================
@@ -36,7 +36,7 @@ database_id = "99db8f91-db78-451a-bdc8-75dd2cf3f25b"
 # ==========================================
 [[vectorize]]
 binding = "VECTORIZE"
-index_name = "ai-agent-vectors"
+index_name = "gac-vectors"
 
 # ==========================================
 # R2 Storage Bindings
@@ -45,7 +45,7 @@ index_name = "ai-agent-vectors"
 # ✅ ENABLED - Create bucket 'ai-agent-files' in Dashboard before deployment
 [[r2_buckets]]
 binding = "STORAGE"
-bucket_name = "ai-agent-files"
+bucket_name = "gac-files"
 
 # ==========================================
 # KV Namespace Bindings (for caching)
@@ -61,19 +61,19 @@ id = "ac78ef75b22f417d806008d1c948d33e"
 # ✅ ENABLED - For async task processing
 [[queues.producers]]
 binding = "TASK_QUEUE"
-queue = "ai-agent-tasks"
+queue = "gac-tasks"
 
 [[queues.consumers]]
-queue = "ai-agent-tasks"
+queue = "gac-tasks"
 max_batch_size = 10
 max_batch_timeout = 30
 
 [[queues.producers]]
 binding = "BACKUP_QUEUE"
-queue = "ai-agent-backup"
+queue = "gac-backup"
 
 [[queues.consumers]]
-queue = "ai-agent-backup"
+queue = "gac-backup"
 max_batch_size = 5
 max_batch_timeout = 60
 
@@ -105,14 +105,14 @@ vars = { ENVIRONMENT = "development", LOG_LEVEL = "debug" }
 
 [[env.development.d1_databases]]
 binding = "DB"
-database_name = "ai-agent-db-dev"
+database_name = "gac-db-dev"
 database_id = "ad1c82b8-d27a-4a48-9a4b-e72fa8b31eec"
 
 # ==========================================
 # Production Configuration
 # ==========================================
 [env.production]
-name = "ai-agent-team-prod"
+name = "gac-prod"
 vars = { ENVIRONMENT = "production", LOG_LEVEL = "info", DOMAIN = "shyangtsuen.xyz" }
 
 # Custom domain routes for production
@@ -123,7 +123,7 @@ routes = [
 
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "ai-agent-db-prod-v1"
+database_name = "gac-db-prod-v1"
 database_id = "22076fb8-45e3-4b90-b6cb-98d5f23b369c"
 
 [[env.production.kv_namespaces]]
@@ -132,25 +132,25 @@ id = "ac78ef75b22f417d806008d1c948d33e"
 
 [[env.production.r2_buckets]]
 binding = "STORAGE"
-bucket_name = "ai-agent-files"
+bucket_name = "gac-files"
 
 [[env.production.queues.producers]]
 binding = "TASK_QUEUE"
-queue = "ai-agent-tasks"
+queue = "gac-tasks"
 
 [[env.production.queues.producers]]
 binding = "BACKUP_QUEUE"
-queue = "ai-agent-backup"
+queue = "gac-backup"
 
 [[env.production.vectorize]]
 binding = "VECTORIZE"
-index_name = "ai-agent-vectors"
+index_name = "gac-vectors"
 
 # ==========================================
 # Staging Configuration (Optional)
 # ==========================================
 [env.staging]
-name = "ai-agent-team-staging"
+name = "gac-staging"
 vars = { ENVIRONMENT = "staging", LOG_LEVEL = "debug", DOMAIN = "shyangtsuen.xyz" }
 
 routes = [
@@ -159,7 +159,7 @@ routes = [
 
 [[env.staging.d1_databases]]
 binding = "DB"
-database_name = "ai-agent-db-dev"
+database_name = "gac-db-dev"
 database_id = "ad1c82b8-d27a-4a48-9a4b-e72fa8b31eec"
 
 # ==========================================

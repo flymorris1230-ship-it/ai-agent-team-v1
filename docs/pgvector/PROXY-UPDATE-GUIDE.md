@@ -57,7 +57,7 @@ pkill -f nas-postgres-proxy.py
 
 # 3. 下載最新版本的 Proxy 腳本
 cd /volume1/docker/ai-agent-backup
-curl -O https://raw.githubusercontent.com/flymorris1230-ship-it/ai-agent-team-v1/main/nas-postgres-proxy.py
+curl -O https://raw.githubusercontent.com/flymorris1230-ship-it/gac-v1/main/nas-postgres-proxy.py
 
 # 4. 確認環境變數
 cat nas-proxy.env

@@ -7,7 +7,7 @@
 
 set -e
 
-echo "🚀 AI Agent Team - Deployment Script"
+echo "🚀 GAC - Deployment Script"
 echo "====================================="
 echo ""
 
@@ -111,7 +111,7 @@ if [ "$ENVIRONMENT" = "production" ]; then
 elif [ "$ENVIRONMENT" = "staging" ]; then
     HEALTH_URL="https://api-staging.shyangtsuen.xyz/health"
 else
-    HEALTH_URL="https://ai-agent-team.workers.dev/health"
+    HEALTH_URL="https://gac.workers.dev/health"
 fi
 
 echo "Testing: $HEALTH_URL"
@@ -161,7 +161,7 @@ elif [ "$ENVIRONMENT" = "staging" ]; then
     echo "     npx wrangler deployments list --env staging"
 else
     echo "  1. Test API endpoint:"
-    echo "     curl https://ai-agent-team.workers.dev/health"
+    echo "     curl https://gac.workers.dev/health"
 fi
 
 echo ""

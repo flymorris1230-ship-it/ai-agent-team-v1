@@ -187,7 +187,7 @@ sudo ./install-python-deps.sh
 
 所有文件位於你的 Mac：
 ```
-/Users/morrislin/Desktop/ai-agent-team-v1/ai-agent-team-v1/
+/Users/morrislin/Desktop/gac-v1/gac-v1/
 ```
 
 ### **核心文件**（所有方案都需要）

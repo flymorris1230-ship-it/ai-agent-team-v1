@@ -3,7 +3,7 @@
 ## 當前狀態
 
 ✅ 本地 Git 已配置
-✅ 遠端倉庫：`git@github.com:flymorris1230-ship-it/ai-agent-team-v1.git`
+✅ 遠端倉庫：`git@github.com:flymorris1230-ship-it/gac-v1.git`
 ❌ SSH 密鑰未設置（需要配置才能 push）
 
 ## 選項 1: 使用 SSH 密鑰（推薦）
@@ -60,7 +60,7 @@ git push origin main
 ### 步驟 1: 更改遠端 URL
 
 ```bash
-git remote set-url origin https://github.com/flymorris1230-ship-it/ai-agent-team-v1.git
+git remote set-url origin https://github.com/flymorris1230-ship-it/gac-v1.git
 ```
 
 ### 步驟 2: 配置認證

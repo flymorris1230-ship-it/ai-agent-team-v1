@@ -171,9 +171,9 @@ verify_deployment() {
 
     # 獲取 Worker URL
     if [ "$ENVIRONMENT" = "production" ]; then
-        WORKER_URL=$(wrangler deployments list --name ai-agent-team-prod | grep "https://" | head -1 | awk '{print $1}')
+        WORKER_URL=$(wrangler deployments list --name gac-prod | grep "https://" | head -1 | awk '{print $1}')
     else
-        WORKER_URL=$(wrangler deployments list --name ai-agent-team-staging | grep "https://" | head -1 | awk '{print $1}')
+        WORKER_URL=$(wrangler deployments list --name gac-staging | grep "https://" | head -1 | awk '{print $1}')
     fi
 
     if [ -z "$WORKER_URL" ]; then
@@ -213,9 +213,9 @@ verify_deployment() {
 show_deployment_info() {
     # 獲取 Worker URL
     if [ "$ENVIRONMENT" = "production" ]; then
-        WORKER_URL=$(wrangler deployments list --name ai-agent-team-prod | grep "https://" | head -1 | awk '{print $1}')
+        WORKER_URL=$(wrangler deployments list --name gac-prod | grep "https://" | head -1 | awk '{print $1}')
     else
-        WORKER_URL=$(wrangler deployments list --name ai-agent-team-staging | grep "https://" | head -1 | awk '{print $1}')
+        WORKER_URL=$(wrangler deployments list --name gac-staging | grep "https://" | head -1 | awk '{print $1}')
     fi
 
     echo ""

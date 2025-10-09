@@ -123,7 +123,7 @@ All 9 AI agents verified in production database:
 ## 🏗️ Infrastructure Status
 
 ### Deployed Resources
-- ✅ **Cloudflare Workers**: `ai-agent-team-prod` (Version: 45ca43d8-80dc-44a7-97c1-acb00992ecc3)
+- ✅ **Cloudflare Workers**: `gac-prod` (Version: 45ca43d8-80dc-44a7-97c1-acb00992ecc3)
 - ✅ **D1 Database**: `ai-agent-db-prod-v1` (ID: 22076fb8-45e3-4b90-b6cb-98d5f23b369c)
 - ✅ **R2 Bucket**: `ai-agent-files`
 - ✅ **Task Queue**: `ai-agent-tasks` (ID: 39397b8c5f2d4ac7b84fe46b514feab2)
@@ -326,4 +326,4 @@ Minor limitations (Vectorize unavailable, PostgreSQL disabled) do not impact cor
 
 **🤖 Generated with Claude Code**
 **📊 Automated Production Testing**
-**🔗 GitHub**: [flymorris1230-ship-it/ai-agent-team-v1](https://github.com/flymorris1230-ship-it/ai-agent-team-v1)
+**🔗 GitHub**: [flymorris1230-ship-it/gac-v1](https://github.com/flymorris1230-ship-it/gac-v1)
